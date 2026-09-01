@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelo de Diálogo — Central TIC</title>
+<style>
+:root {
+  --primary: #005ca9;
+  --primary-dark: #003f73;
+  --secondary: #00a3e0;
+  --success: #198754;
+  --warning: #f0ad4e;
+  --danger: #dc3545;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --border: #dfe3e8;
+  --text: #212529;
+  --muted: #6c757d;
+  --sidebar-width: 260px;
+}
+html { width: 100%; overflow-x: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+button, input { font-family: inherit; }
+button { cursor: pointer; }
+
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+  color: white;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+.logo-area {
+  padding: 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+}
+.logo-area h1 { font-size: 17px; font-weight: 700; }
+.logo-area span { display: block; margin-top: 4px; font-size: 12px; opacity: .8; }
+
+.nav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 10px;
+}
+.nav-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  opacity: .55;
+  padding: 10px 10px 6px;
+}
+a.nav-link { text-decoration: none; color: white; }
+.nav-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: white;
+  padding: 11px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  margin-bottom: 3px;
+  transition: .15s;
+}
+.nav-link:hover, .nav-link.active {
+  background: rgba(255,255,255,.14);
+}
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.15);
+}
+.sidebar-footer a {
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,.3);
+  background: transparent;
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.sidebar-footer a:hover { background: rgba(255,255,255,.1); }
+
+.main {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  min-height: 100vh;
+}
+.topbar {
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: 12px;
+}
+.page-title { font-size: 17px; font-weight: 600; white-space: nowrap; }
+.search-box input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  min-width: 220px;
+  outline: none;
+}
+.search-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0,92,169,.12);
+}
+
+.content { padding: 22px; max-width: 100%; }
+
+.vars-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.vars-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+.vars-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.form-group select,
+.form-group input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-size: 13px;
+  outline: none;
+}
+.form-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(0,92,169,.12);
+}
+.form-group input[readonly] {
+  background: #f4f7fa;
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+.vars-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.section-block { margin-bottom: 28px; }
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary);
+}
+
+.script-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  transition: .15s;
+}
+.script-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+.script-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.script-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.script-ordem {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.script-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #333;
+  white-space: pre-wrap;
+  background: #f8f9fb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid #eef1f4;
+}
+.script-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-copy {
+  border: none;
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.btn-copy:hover { background: var(--primary-dark); }
+.btn-preview {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-preview:hover { border-color: var(--primary); color: var(--primary); }
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 40px;
+  font-size: 14px;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: var(--success);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: .25s;
+  z-index: 999;
+  pointer-events: none;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { background: var(--danger); }
+
+.info-bar {
+  background: #eef5fb;
+  border: 1px solid #cfe2f3;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  margin-bottom: 18px;
+  color: #1a4a73;
+}
+
+.preview-box {
+  display: none;
+  margin-top: 10px;
+  background: #fff8e6;
+  border: 1px solid #f0e0a8;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  color: #4a3b00;
+}
+.preview-box.show { display: block; }
+.preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a6d00;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 1200px) {
+  .vars-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .vars-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .sidebar { position: relative; width: 100%; height: auto; }
+  .main { margin-left: 0; width: 100%; }
+  .app { flex-direction: column; }
+  .nav-scroll { max-height: 220px; }
+  .vars-grid { grid-template-columns: 1fr; }
+  .search-box input { min-width: 140px; }
+}
+
+.banner-modelo {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f0c36d;
+  background: #fff8e8;
+  color: #7a5b00;
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.banner-modelo a { color: #005ca9; font-weight: 700; }
+.banner-modelo.ok {
+  border-color: #b7e0c2;
+  background: #edf9f0;
+  color: #0f5c2e;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo-area">
+      <h1>Central TIC</h1>
+      <span>Modelo de Diálogo · N1</span>
+    </div>
+
+    <div class="nav-scroll">
+      <div class="nav-title">Principal</div>
+      <a class="nav-link" href="/#dashboard">📊 Dashboard</a>
+      <a class="nav-link" href="/#atendimento">💬 Atendimento</a>
+      <a class="nav-link" href="/#busca">🔍 Busca Global</a>
+      <a class="nav-link" href="/aplicacoes">🖥️ Aplicações</a>
+
+      <div class="nav-title">Operação</div>
+      <a class="nav-link" href="/chamado">📞 Chamados</a>
+      <a class="nav-link active" href="/dialogo">📋 Modelo de Diálogo</a>
+
+      <div class="nav-title">Base de Atendimento</div>
+      <a class="nav-link" href="/aplicacoes#scripts">📜 Scripts</a>
+      <a class="nav-link" href="/#kb">📚 Knowledge Base</a>
+      <a class="nav-link" href="/aplicacoes#favoritos">⭐ Favoritos</a>
+
+      <div class="nav-title">Índice do Diálogo</div>
+      <div id="indiceNav"></div>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="/#auditoria" id="linkAuditoria" style="display:none;">🔎 Auditoria</a>
+      <a href="/admin" id="linkAdmin" style="display:none;">⚙️ Administração</a>
+      <a href="/logout">🚪 Sair do sistema</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title">📋 Scripts oficiais do atendimento</div>
+      <div class="search-box">
+        <input type="search" id="busca" placeholder="Buscar no modelo de diálogo..." oninput="render()">
+      </div>
+    </header>
+
+    <section class="content">
+      <div id="bannerModelo" class="banner-modelo" style="display:none;"></div>
+
+
+      <div class="vars-card">
+        <div class="vars-title">🧩 Dados do atendimento (preenchem o script automaticamente)</div>
+        <div class="vars-grid">
+          <div class="form-group">
+            <label>Seu nome (atendente)</label>
+            <input id="varAgent" type="text" placeholder="Seu nome" oninput="salvarVars()">
+          </div>
+          <div class="form-group">
+            <label>Nome do usuário (cliente)</label>
+            <input id="varUser" type="text" placeholder="Nome do cliente" oninput="salvarVars()">
+          </div>
+          <div class="form-group">
+            <label>Número do chamado</label>
+            <input id="varChamado" type="text" placeholder="Ex.: INC01234567" oninput="salvarVars()">
+          </div>
+          <div class="form-group">
+            <label>Ilha</label>
+            <select id="varIlha" onchange="salvarVars()">
+              <option value="">Selecione a ilha...</option>
+              <option value="SAP">SAP</option>
+              <option value="DEMAIS SERVIÇOS">DEMAIS SERVIÇOS</option>
+              <option value="AE ESPECIALIZADA">AE ESPECIALIZADA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Saudação (automática)</label>
+            <input id="varSaudacao" type="text" readonly>
+          </div>
+        </div>
+        <div class="vars-hint">
+          A saudação muda sozinha conforme o horário:
+          <strong>Bom dia</strong> (até 11h59), <strong>Boa tarde</strong> (12h–17h59), <strong>Boa noite</strong> (a partir das 18h).
+          Ao copiar, os campos <code>[saudação]</code>, <code>[agent_name]</code>, <code>[user_name]</code>, <code>[Nº do chamado]</code>, <code>[nome da ilha]</code> etc. são substituídos. Escolha a <strong>Ilha</strong> antes de copiar.
+        </div>
+      </div>
+
+      <div class="info-bar">
+        Preencha os dados acima e clique em <strong>Copiar</strong> — a mensagem já sai pronta.
+        Total: <strong id="totalLabel">0</strong> scripts.
+      </div>
+
+      <div id="conteudo"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPTS_FALLBACK = [{"id": "mdl_1_1", "emoji": "🎙️", "titulo": "1.1 Inicialização via Chat (Assistente Petrobras)", "tag": "1. Inicialização", "ordem": "1.1", "texto": "[saudação], Sr. (a) [user_name], me chamo [agent_name], espero que esteja tudo bem! Assumi seu atendimento, em que posso te ajudar?", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_1b", "emoji": "🏢", "titulo": "1.1.2 Sondagem usuário COI", "tag": "1. Inicialização", "ordem": "1.1.2", "texto": "O senhor(a) fala de dentro de um Centro de Operações Integradas?", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_2", "emoji": "💬", "titulo": "1.2 Inicialização via WhatsApp", "tag": "1. Inicialização", "ordem": "1.2", "texto": "[saudação], Sr. (a) [user_name], me chamo [agent_name], espero que esteja tudo bem! Assumi seu atendimento, em que posso te ajudar?\nLembrando, suas mensagens de áudios não chegarão até mim. 😉", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_3", "emoji": "🔄", "titulo": "1.3 Retorno do Fluxo de Ausência", "tag": "1. Inicialização", "ordem": "1.3", "texto": "[saudação], Sr. (a) [user_name]! Vou prosseguir com o seu atendimento.", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_2", "emoji": "🖥️", "titulo": "2. Captura remota de equipamentos", "tag": "2. Captura", "ordem": "2", "texto": "Posso acessar seu micro para verificar? ou Para melhor te atender, é necessário capturar o micro, podemos continuar? ou Obrigada por aguardar! Posso capturar seu micro para verificar?\n\nPor favor, acesse o link: https://suportetic.petrobras.com.br/ através do navegador do seu notebook ou microcomputador.", "categoria": "2. Captura", "sistema": true, "ativo": true}, {"id": "mdl_2_1", "emoji": "🔐", "titulo": "2.1 Elevação de captura", "tag": "2. Captura", "ordem": "2.1", "texto": "Para que eu possa ajudar da melhor maneira possível, vou precisar de permissões de administrador. Você verá uma janela pop-up solicitando aprovação. Por favor, clique em Sim para permitir o acesso.", "categoria": "2. Captura", "sistema": true, "ativo": true}, {"id": "mdl_3", "emoji": "📋", "titulo": "3. Informar número do chamado", "tag": "3. Chamado", "ordem": "3", "texto": "Senhor (a), esse atendimento gerou o número de chamado [Nº do chamado] que também será enviado para o seu e-mail.", "categoria": "3. Chamado", "sistema": true, "ativo": true}, {"id": "mdl_4_1_1", "emoji": "↗️", "titulo": "4.1.1 Repasse — User Onshore (introdução)", "tag": "4. Repasse", "ordem": "4.1.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_1_2", "emoji": "📞", "titulo": "4.1.2 Confirmação de dados — Onshore", "tag": "4. Repasse", "ordem": "4.1.2", "texto": "O Sr. (a) poderia informar um contato alternativo que possa acompanhar e autorizar a conclusão do atendimento, caso não esteja disponível no momento, por favor?\nO Sr. (a) possui alguma escala de trabalho?\n- Caso positivo, qual unidade se encontra;\n- Qual melhor horário para atendimento.\n\nAgradeço pelas informações.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_2_1", "emoji": "🛢️", "titulo": "4.2.1 Repasse — User Offshore (introdução)", "tag": "4. Repasse", "ordem": "4.2.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_2_2", "emoji": "🛢️", "titulo": "4.2.2 Confirmação de dados — Offshore", "tag": "4. Repasse", "ordem": "4.2.2", "texto": "Sr.(a) para melhor seguir com o seu atendimento, poderia me passar as seguintes informações?\n- Plataforma em que está lotado;\n- Sala/setor específico;\n- Ramal da sala de rádio;\n- Escala de trabalho;\n- Melhor horário para atendimento;\n- Data de desembarque;\n- Indique outro usuário para contato.\n\nAgradeço pelas informações!", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_3_1", "emoji": "✈️", "titulo": "4.3.1 Repasse — User no exterior (introdução)", "tag": "4. Repasse", "ordem": "4.3.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_3_2", "emoji": "✈️", "titulo": "4.3.2 Confirmação de dados — Exterior", "tag": "4. Repasse", "ordem": "4.3.2", "texto": "O Sr.(a) poderia me informar outro número de contato, país que se encontra e o fuso horário por favor?\n\nAgradeço pelas informações!", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_4", "emoji": "🔧", "titulo": "4.4 Atendimento por equipe N3/N4", "tag": "4. Repasse", "ordem": "4.4", "texto": "Sr.(a), informo que o chamado INCXXXXXXXX foi aberto com sucesso e encaminhado para análise da equipe técnica especializada da aplicação, que dará continuidade ao atendimento. Estamos à disposição para acompanhar o processo e ajudar no que for necessário.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_5_1", "emoji": "🧾", "titulo": "5.1 Orientar pelo ServiceNow — Assistente", "tag": "5. ServiceNow", "ordem": "5.1", "texto": "Sr.(a), este atendimento pode ser realizado pela oferta xxxx da TIC.\nSegue o link para registrar o atendimento: xxxx\nDeseja que eu te auxilie no preenchimento da oferta?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_5_2", "emoji": "📱", "titulo": "5.2 Orientar pelo ServiceNow — WhatsApp", "tag": "5. ServiceNow", "ordem": "5.2", "texto": "O senhor (a) está utilizando o WhatsApp pelo celular ou pela web em micro corporativo?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_5_2w", "emoji": "💻", "titulo": "5.2 Via web (micro corporativo)", "tag": "5. ServiceNow", "ordem": "5.2.1", "texto": "Sr.(a), este atendimento pode ser realizado pela oferta xxxx da TIC.\nSegue o link para registrar o atendimento: xxxx\nDeseja que eu te auxilie no preenchimento da oferta?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_6_1", "emoji": "⏳", "titulo": "6.1 Espera — Ações de sondagem", "tag": "6. Espera", "ordem": "6.1", "texto": "Um momento enquanto efetuo a checagem.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_2", "emoji": "📖", "titulo": "6.2 Espera — Leitura do histórico (transferência)", "tag": "6. Espera", "ordem": "6.2", "texto": "Senhor(a), identifiquei que houve a transferência do seu atendimento. Peço que aguarde um instante enquanto analiso o histórico da conversa para melhor lhe atender.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_2b", "emoji": "✅", "titulo": "6.2 Escopo da ilha atual após transferência", "tag": "6. Espera", "ordem": "6.2.1", "texto": "Sr.(a), peço desculpas pelo transtorno. Neste momento seguiremos com o seu atendimento e faremos o acompanhamento necessário para resolver sua solicitação.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_3", "emoji": "🔍", "titulo": "6.3 Espera — Busca de procedimentos", "tag": "6. Espera", "ordem": "6.3", "texto": "Estou buscando informações, peço que aguarde um instante. Caso deseje algo, basta me chamar, tudo bem?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_4", "emoji": "⚡", "titulo": "6.4 Espera — Procedimento curto", "tag": "6. Espera", "ordem": "6.4", "texto": "Realizarei o procedimento, caso tenha necessidade basta me chamar, ok?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5", "emoji": "⏱️", "titulo": "6.5 Espera — Procedimento longo ❗", "tag": "6. Espera", "ordem": "6.5", "texto": "[nome do usuário], o procedimento a ser realizado pode demorar cerca X tempo. Podemos continuar?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5p", "emoji": "⏱️", "titulo": "6.5.1 Caso positivo — procedimento longo", "tag": "6. Espera", "ordem": "6.5.1", "texto": "Assim que concluir lhe aviso aqui, mas sinta-se à vontade para me chamar em caso de dúvidas ou precisar de alguma coisa, ok?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5n", "emoji": "📅", "titulo": "6.5.2 Caso negativo — agendar", "tag": "6. Espera", "ordem": "6.5.2", "texto": "Gostaria de agendar um horário para continuarmos o atendimento?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_6", "emoji": "👋", "titulo": "6.6 User pede atenção durante a espera ❗", "tag": "6. Espera", "ordem": "6.6", "texto": "Sim, pode falar. / Sim, estou à disposição.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_7c", "emoji": "↩️", "titulo": "6.7.1 Retorno — procedimento curto", "tag": "6. Espera", "ordem": "6.7.1", "texto": "Obrigada por ter aguardado.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_7l", "emoji": "↩️", "titulo": "6.7.2 Retorno — procedimento longo", "tag": "6. Espera", "ordem": "6.7.2", "texto": "Obrigado por ter aguardado, peço desculpas pela demora!", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_8", "emoji": "📦", "titulo": "6.8 Autoinstalação pelo Portal da Empresa", "tag": "6. Espera", "ordem": "6.8", "texto": "Senhor(a), a aplicação solicitada está disponível para autoinstalação pelo Portal da Empresa. Essa é uma iniciativa da TIC para tornar o processo mais ágil e eficiente.\n\nVou orientar os passos iniciais e, depois, basta aguardar a instalação automática 😄\n\nMas não se preocupe, caso ocorra alguma falha, por favor, retorne pelos canais oficiais da TIC.\n\nPosso realizar o acesso remoto para iniciar a instalação para o(a) senhor(a)?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_7", "emoji": "🎯", "titulo": "7. Retornar ao foco do atendimento", "tag": "7. Foco", "ordem": "7", "texto": "Sr.(a) [nome do usuário], para dar continuidade e concluir o nosso atendimento, preciso que Sr.(a) me auxilie/me informe... (Prossiga com a necessidade).", "categoria": "7. Foco", "sistema": true, "ativo": true}, {"id": "mdl_8", "emoji": "⚠️", "titulo": "8. Indisponibilidade de Serviços TIC (CAOS)", "tag": "8. CAOS", "ordem": "8", "texto": "Sr.(a), este serviço está indisponível no momento. Nossas equipes já estão trabalhando para redução do impacto e normalização o mais breve possível.\n\nPara saber sobre a normalização do serviço basta acessar a página inicial do ServiceNow e consultar as indisponibilidades cadastradas no painel Status de Serviços TIC.", "categoria": "8. CAOS", "sistema": true, "ativo": true}, {"id": "mdl_9_1", "emoji": "↔️", "titulo": "9.1 Transferência — sem transferência anterior", "tag": "9. Transferência", "ordem": "9.1", "texto": "Sr. (a), para essa solicitação a equipe de atendimento adequada é a [nome da ilha]. Irei direcionar o(a) sr. (a) para a equipe responsável. Aguarde por favor.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_9_2_1", "emoji": "↔️", "titulo": "9.2.1 Transferência anterior — escopo desta ilha", "tag": "9. Transferência", "ordem": "9.2.1", "texto": "Sr.(a), identifiquei que houve algumas transferências anteriormente. Peço desculpas pelo transtorno. Neste momento seguiremos com o seu atendimento por aqui e faremos o acompanhamento necessário para resolver sua solicitação.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_9_2_2", "emoji": "↔️", "titulo": "9.2.2 Transferência anterior — outra ilha", "tag": "9. Transferência", "ordem": "9.2.2", "texto": "Sr.(a), entendo que já houve algumas transferências e peço desculpas pelo transtorno. Realizamos uma análise interna e confirmamos que a equipe responsável para resolver sua solicitação é [nome da ilha]. Irei direcioná-lo(a), garantindo que seu atendimento seja concluído da melhor forma. Aguarde um momento, por favor.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_10", "emoji": "🖥️", "titulo": "10. Micro terceirizado — problema de hardware", "tag": "10. Terceirizado", "ordem": "10", "texto": "Sr. (a), para problemas de hardware a TIC da Petrobras não consegue efetuar a correção, por se tratar de um equipamento terceirizado. Nesses casos, é necessário que o senhor acione a TIC da empresa do senhor(a), para que eles possam analisar o equipamento. Caso a TIC da sua empresa precise, poderá entrar em contato com a TIC Petrobras.", "categoria": "10. Terceirizado", "sistema": true, "ativo": true}, {"id": "mdl_11", "emoji": "🔑", "titulo": "11. Logado com chave de terceiros", "tag": "11. Chave terceiros", "ordem": "11", "texto": "Senhor(a), notei que o equipamento está logado com a chave de terceiros. Por motivos de segurança da informação, não podemos prosseguir com o atendimento enquanto o acesso estiver nessa condição.\n\nPedimos que o login seja feito com sua própria chave, no seu perfil. Assim que o acesso estiver regularizado, poderemos dar continuidade normalmente.\n\nCaso o problema esteja relacionado ao perfil do usuário xxx, é necessário que ele mesmo entre em contato pelos nossos canais de atendimento.", "categoria": "11. Chave terceiros", "sistema": true, "ativo": true}, {"id": "mdl_12", "emoji": "🕐", "titulo": "12. Transferência por fim de turno ❗", "tag": "12. Fim de turno", "ordem": "12", "texto": "Sr.(a) estou no fim de turno, para prosseguir com o seu atendimento será necessária a transferência da sua interação para outro atendente. Não se preocupe, pois, irei repassar as informações e a captura do seu micro. Peço que aguarde um momento, por favor.", "categoria": "12. Fim de turno", "sistema": true, "ativo": true}, {"id": "mdl_13_1", "emoji": "🏢", "titulo": "13.1 Transferência para BackOffice — pergunta", "tag": "13. BackOffice", "ordem": "13.1", "texto": "Senhor(a) xxxx, por se tratar de uma ação demorada, disponibilizamos uma equipe especializada em atendimentos longos para prosseguir. A comunicação com a equipe continuará através do Assistente Petrobras durante todo processo até a conclusão. O senhor(a) aceita que eu encaminhe o atendimento?", "categoria": "13. BackOffice", "sistema": true, "ativo": true}, {"id": "mdl_13_2", "emoji": "🏢", "titulo": "13.2 Transferência para BackOffice — confirmação", "tag": "13. BackOffice", "ordem": "13.2", "texto": "O analista xxx prosseguirá com o atendimento e com a captura de tela.\nAo final o senhor (a) receberá uma pesquisa de satisfação deste atendimento, sua opinião é muito importante para a TIC.", "categoria": "13. BackOffice", "sistema": true, "ativo": true}, {"id": "mdl_14", "emoji": "🏭", "titulo": "14. Anotação — transferência usuário COI", "tag": "14. COI", "ordem": "14", "texto": "Bom dia/tarde/noite. Usuário de COI (Centro de Operações Integradas) precisando de suporte. Reforçamos que este tipo de usuário deve ser atendido em oferta específica do COI.", "categoria": "14. COI", "sistema": true, "ativo": true}, {"id": "mdl_15", "emoji": "🌐", "titulo": "15. Transferência para analista bilíngue (PT)", "tag": "15. Idiomas", "ordem": "15", "texto": "Bom dia / Boa tarde / Boa noite, [Identificação do usuário]! Espero que esteja tudo bem!\nPeço que aguarde um momento enquanto transfiro essa interação para que um analista bilíngue possa prosseguir com o atendimento.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_1", "emoji": "🇬🇧", "titulo": "15.1 Inglês — Todas as ilhas", "tag": "15. Idiomas", "ordem": "15.1", "texto": "Good morning / Good afternoon / Good evening, [Identificação do usuário]! I hope everything is well!\nPlease wait a moment while I transfer this interaction so that a bilingual analyst can continue assisting you.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_2", "emoji": "🇪🇸", "titulo": "15.2 Espanhol — Todas as ilhas", "tag": "15. Idiomas", "ordem": "15.2", "texto": "Buenos días / Buenas tardes / Buenas noches, [Identificación del usuario]! ¡Espero que todo esté bien!\nLe pido que espere un momento hasta que transfiera esta interacción para que un analista bilingüe pueda continuar con su atención.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3en", "emoji": "🇬🇧", "titulo": "15.3.1 Inglês — fora do escopo do SD", "tag": "15. Idiomas", "ordem": "15.3.1", "texto": "Sir/Madam, the team responsible for handling your request does not offer bilingual support. However, rest assured that I will open a ticket with all the necessary information and forward it to the specialized department. Please hold on for a moment.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3enb", "emoji": "🇬🇧", "titulo": "15.3.1 Inglês — após abrir chamado", "tag": "15. Idiomas", "ordem": "15.3.1b", "texto": "Sir/Madam, the ticket xxxx has been opened and forwarded to the specialized team. You will be contacted shortly so that they can proceed with the support. Is there anything else I can assist you with?", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3es", "emoji": "🇪🇸", "titulo": "15.3.2 Espanhol — fora do escopo do SD", "tag": "15. Idiomas", "ordem": "15.3.2", "texto": "Sr.(a), el equipo de servicio específico para su demanda no cuenta con un canal de atención bilingüe, pero no se preocupe, abriré el ticket con la información necesaria y lo dirigiré al equipo especializado. Por favor espera un momento.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3esb", "emoji": "🇪🇸", "titulo": "15.3.2 Espanhol — após abrir chamado", "tag": "15. Idiomas", "ordem": "15.3.2b", "texto": "Sr.(a), se abrió el ticket xxxx y se remitió al equipo especializado. Pronto nos pondremos en contacto con usted para que pueda continuar con el servicio. ¿Hay algo más en lo que pueda ayudar?", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_16", "emoji": "⭐", "titulo": "16. Abertura de TRAMA de Elogio", "tag": "16. Elogio", "ordem": "16", "texto": "Gostaria de formalizar o elogio?", "categoria": "16. Elogio", "sistema": true, "ativo": true}, {"id": "mdl_17", "emoji": "🏁", "titulo": "17. Finalização — pergunta final", "tag": "17. Finalização", "ordem": "17", "texto": "Algo mais em que posso ajudar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2", "emoji": "📸", "titulo": "17.2 Finalização da captura de tela", "tag": "17. Finalização", "ordem": "17.2", "texto": "Encerrei a captura do equipamento, poderia confirmar por favor?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2_1", "emoji": "⭐", "titulo": "17.2.1 Pesquisa de satisfação (Assistente)", "tag": "17. Finalização", "ordem": "17.2.1", "texto": "Agora vou direcionar você para uma rápida pesquisa de satisfação sobre o meu atendimento, a mesma ficará disponível por 1h.\n\nSua participação é muito importante, pois nos ajuda a continuar evoluindo e entender como foi a sua experiência durante o atendimento.\n\nEspero contar com a sua participação.\nAté breve!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2_2", "emoji": "👋", "titulo": "17.2.1.2 Exceção — sem pesquisa", "tag": "17. Finalização", "ordem": "17.2.2", "texto": "A TIC agradece o contato, tenha um bom dia, boa tarde ou boa noite.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_3", "emoji": "🔑", "titulo": "17.3 Finalização — chave de serviço", "tag": "17. Finalização", "ordem": "17.3", "texto": "[nome do usuário], você está logado com sua chave de 4 dígitos?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_3n", "emoji": "🔑", "titulo": "17.3.1 Chave de serviço — caso negativo", "tag": "17. Finalização", "ordem": "17.3.1", "texto": "Para prosseguir com o atendimento, precisamos que o acesso seja realizado através da chave de 4 dígitos e seja realizado novo contato através de um de nossos canais de atendimento.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4", "emoji": "⏸️", "titulo": "17.4 Sem retorno do user — tentativa", "tag": "17. Finalização", "ordem": "17.4", "texto": "[nome do usuário], podemos continuar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4a", "emoji": "⏸️", "titulo": "17.4.1.1 Sem retorno — com chamado aberto", "tag": "17. Finalização", "ordem": "17.4.1", "texto": "Por falta de retorno sua sessão será pausada, mas não se preocupe, pois o seu chamado [nº do chamado] ficará pendente e poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4b", "emoji": "⏸️", "titulo": "17.4.1.2 Sem retorno — sem chamado", "tag": "17. Finalização", "ordem": "17.4.2", "texto": "Por falta de retorno sua sessão será pausada, mas não se preocupe, poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4va", "emoji": "⏸️", "titulo": "17.4.2 VA — com chamado (finaliza sessão)", "tag": "17. Finalização", "ordem": "17.4.2a", "texto": "Por falta de retorno sua sessão será finalizada. Seu chamado [nº do chamado] ficará pendente e poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4vb", "emoji": "⏸️", "titulo": "17.4.2 VA — sem chamado (finaliza sessão)", "tag": "17. Finalização", "ordem": "17.4.2b", "texto": "Por falta de retorno sua sessão será finalizada. O(a) sr.(a) poderá retornar o contato quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_5", "emoji": "🔌", "titulo": "17.5 Falha do Genesys", "tag": "17. Finalização", "ordem": "17.5", "texto": "Sr.(a), parece que a conexão do chat caiu, deseja continuar o atendimento por aqui?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_1", "emoji": "👋", "titulo": "17.6.1 Desistência antes de iniciar", "tag": "17. Finalização", "ordem": "17.6.1", "texto": "Tudo bem. A TIC agradece o contato. Desejo um bom dia/ boa tarde/ boa noite.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_2", "emoji": "❓", "titulo": "17.6.2 Desistência com chamado — pergunta", "tag": "17. Finalização", "ordem": "17.6.2", "texto": "Senhor, neste caso, deseja deixar o chamado pendente ou podemos cancelar o chamado e o senhor entra em contato conosco novamente quando tiver disponibilidade?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_2c", "emoji": "❌", "titulo": "17.6.2.2 Cancelamento a pedido do user", "tag": "17. Finalização", "ordem": "17.6.2c", "texto": "Ok. Se precisar de ajuda novamente, não hesite em entrar em contato com a TIC. Estamos aqui para ajudar!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7", "emoji": "🚫", "titulo": "17.7.1 Conversas ofensivas ou assédio", "tag": "17. Finalização", "ordem": "17.7.1", "texto": "Sr.(a) [nome do usuário], para podermos efetivamente resolver suas questões junto à TIC, é fundamental mantermos um diálogo construtivo e focado na solução. Se você puder colaborar nesse sentido, estarei à disposição para auxiliá-lo da melhor forma possível.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7e", "emoji": "🚫", "titulo": "17.7.1.2 Encerrar por falta de foco", "tag": "17. Finalização", "ordem": "17.7.1e", "texto": "Senhor(a), por falta de foco na resolução do seu problema estou encerrando nossa interação.\nTenha um [bom dia/boa tarde/boa noite]!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7l", "emoji": "🔒", "titulo": "17.7.2 Localização física da empresa", "tag": "17. Finalização", "ordem": "17.7.2", "texto": "Por questões de Segurança Empresarial não podemos informá-lo.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8", "emoji": "📅", "titulo": "17.8 Retorno posterior — agendar", "tag": "17. Finalização", "ordem": "17.8", "texto": "Como desejar, [nome do usuário]! Mas para assegurarmos o melhor atendimento, é importante agendarmos um horário para nosso contato. Por gentileza, nos informe qual seu horário de expediente para que possamos retornar para você.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8b", "emoji": "📋", "titulo": "17.8.1 Após confirmação do agendamento", "tag": "17. Finalização", "ordem": "17.8.1", "texto": "Seu registro [nº do registro] está aberto. Para sua comodidade, sugiro anotar o número desse chamado para facilitar a retomada do atendimento.\n\nExiste algo mais em que eu possa ajudar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8c", "emoji": "🏁", "titulo": "17.8.3 Encerramento após agendamento", "tag": "17. Finalização", "ordem": "17.8.3", "texto": "Agradeço seu tempo. Tenha um ótimo dia! 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_9", "emoji": "🏢", "titulo": "17.9 Finalização exclusiva BKO", "tag": "17. Finalização", "ordem": "17.9", "texto": "Pronto! Sua solicitação foi resolvida com sucesso. Caso precise de algo mais, estamos à disposição!\n\nAo final, você poderá receber uma pesquisa sobre sua experiência. Ela é baseada no atendimento prestado neste momento, e seu feedback nos ajuda a continuar melhorando!\n\nAgradecemos o contato e desejamos um ótimo dia!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_18_1", "emoji": "❌", "titulo": "18.1 Fora do escopo TIC", "tag": "18. Negativa atendimento", "ordem": "18.1", "texto": "[nome do usuário], esta solicitação não faz parte do escopo de atendimento da TIC.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_1b", "emoji": "❌", "titulo": "18.1.2 Fora do escopo Petrobras", "tag": "18. Negativa atendimento", "ordem": "18.1.2", "texto": "[nome do usuário], a TIC não presta suporte para este tipo de solicitação.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2", "emoji": "📘", "titulo": "18.2 Orientação de usabilidade (SINPEP)", "tag": "18. Negativa atendimento", "ordem": "18.2", "texto": "Sr.(a) [nome do usuário], peço desculpas pelo transtorno, mas, conforme o Padrão SINPEP PE-1PBR-0176, a TIC não presta suporte na usabilidade das aplicações e não dispomos de artigos com este tipo de orientação.\n\nNossa equipe está comprometida em oferecer suporte técnico focado em instalações, desinstalações e correção de falhas específicas. Caso você esteja precisando de algum destes atendimentos, teremos o prazer de ajudá-lo(a).\n\nLamentamos não poder fornecer orientações de usabilidade, mas estamos à disposição para ajudar no que for possível dentro do nosso escopo de atendimento. Contamos com a sua compreensão.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2b", "emoji": "📘", "titulo": "18.2.1 Usabilidade com artigo na KB", "tag": "18. Negativa atendimento", "ordem": "18.2.1", "texto": "Sr.(a), nossa equipe está comprometida em oferecer suporte técnico focado em instalações, desinstalações e correção de falhas específicas, mas não orientamos quanto ao seu uso. Entretanto, encontramos o procedimento [link do procedimento] na base de conhecimento que pode lhe auxiliar. Outros procedimentos também podem estar disponíveis e você pode procurá-los no campo de pesquisa do ServiceNow.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2c", "emoji": "📘", "titulo": "18.2 Aplicações de Negócio — usabilidade", "tag": "18. Negativa atendimento", "ordem": "18.2c", "texto": "Sr.(a), nossa equipe está à disposição para oferecer suporte técnico voltado a instalações, desinstalações e correções de falhas específicas. No momento, não realizamos orientações detalhadas sobre o uso da aplicação.\n\nNo entanto, identificamos que o procedimento [link do procedimento] está disponível em nossa base de conhecimento e pode auxiliá-lo. Além disso, outros materiais de apoio podem estar disponíveis e podem ser localizados por meio do campo de pesquisa do ServiceNow.\n\nPermanecemos à disposição para qualquer necessidade relacionada ao suporte técnico.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_3", "emoji": "☎️", "titulo": "18.3 Interesse em atendimento por telefone", "tag": "18. Negativa atendimento", "ordem": "18.3", "texto": "Sr.(a) [nome do usuário], o meu atendimento é exclusivo para o canal chat, por isso não consigo redirecionar sua solicitação para outro canal. Mas estou aqui para te auxiliar da melhor forma possível! 😉", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_3b", "emoji": "☎️", "titulo": "18.3.1 Insistência — agendar telefone", "tag": "18. Negativa atendimento", "ordem": "18.3.1", "texto": "Gostaria de agendar um horário para que um outro técnico continue o atendimento através de um contato telefônico?", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_19_1", "emoji": "💬", "titulo": "19.1 Negativa de conversa pelo Bomgar", "tag": "19. Negativa conversa", "ordem": "19.1", "texto": "Sr.(a), por favor, por questão de fluxo devemos manter nosso diálogo apenas através do teams no Assistente Petrobras.", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_19_1b", "emoji": "🔄", "titulo": "19.1.1 Aguardar reconexão do Chat", "tag": "19. Negativa conversa", "ordem": "19.1.1", "texto": "Vamos aguardar a reconexão, por gentileza.", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_19_2", "emoji": "💼", "titulo": "19.2 Contato via Teams para novo atendimento", "tag": "19. Negativa conversa", "ordem": "19.2", "texto": "Bom dia/Boa tarde/Boa noite, [nome do usuário]! Neste momento estou realizando outro atendimento. Se desejar, pode deixar aqui um dia e horário que agendarei seu atendimento.\n\nEm caso de urgência, peço que entre em contato por um dos nossos canais de atendimento:\n• ServiceNow: Homepage - Catálogo de Serviços Petrobras\n• Assistente Petrobras localizado na barra lateral do seu Teams\n• Pelo 0800 881 0881\n• WhatsApp: 21 3224-0881\n\nAgradeço a sua compreensão, tenha um ótimo dia!", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_20_1", "emoji": "🔁", "titulo": "20.1 Cancelamento por duplicidade", "tag": "20. Cancelamento", "ordem": "20.1", "texto": "Senhor(a), durante a análise da sua solicitação, identifiquei que já existe um chamado registrado para o mesmo atendimento. Para evitar duplicidade de tratativas e possíveis divergências no acompanhamento, o chamado XXX será cancelado e seguiremos com o atendimento pelo chamado já existente xxx.", "categoria": "20. Cancelamento", "sistema": true, "ativo": true}, {"id": "mdl_20_2", "emoji": "🔁", "titulo": "20.2 Cancelamento por oferta incorreta", "tag": "20. Cancelamento", "ordem": "20.2", "texto": "Senhor(a), após uma sondagem mais detalhada, identifiquei que sua solicitação se refere a outra categorização de serviço. Portanto, o chamado XXX será cancelado, mas não se preocupe, realizei a abertura do novo chamado de número XXX onde será possível acompanhar as atualizações.", "categoria": "20. Cancelamento", "sistema": true, "ativo": true}, {"id": "mdl_21", "emoji": "🧭", "titulo": "21. Explicar processo quando não há solução imediata", "tag": "21. Processo", "ordem": "21", "texto": "Nesse caso, o processo funciona da seguinte forma: [explicar brevemente os próximos passos]. A tratativa depende de [explicar se depende de outra área/aprovação/equipe, etc.], mas fique tranquilo(a), caso surja qualquer dúvida ou dificuldade, você pode retornar o contato que a TIC te ajudará no que for possível.", "categoria": "21. Processo", "sistema": true, "ativo": true}];
+
+let SCRIPTS = Array.isArray(SCRIPTS_FALLBACK) ? SCRIPTS_FALLBACK.slice() : [];
+
+
+const SECOES = [];
+SCRIPTS.forEach(function (s) {
+  if (SECOES.indexOf(s.tag) === -1) SECOES.push(s.tag);
+});
+
+/* ---------- Saudação automática ---------- */
+function obterSaudacao() {
+  var h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Bom dia";
+  if (h >= 12 && h < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
+function atualizarSaudacao() {
+  document.getElementById("varSaudacao").value = obterSaudacao();
+}
+
+/* ---------- Variáveis ---------- */
+// Usuário logado (para isolar dados por conta)
+var USUARIO_ATUAL = "";
+
+function storageKey(base) {
+  var u = (USUARIO_ATUAL || "").trim().toLowerCase();
+  return u ? (base + "::" + u) : base;
+}
+
+function limparCamposDialogo() {
+  var agent = document.getElementById("varAgent");
+  var user = document.getElementById("varUser");
+  var chamado = document.getElementById("varChamado");
+  var ilha = document.getElementById("varIlha");
+  if (agent) agent.value = "";
+  if (user) user.value = "";
+  if (chamado) chamado.value = "";
+  if (ilha) ilha.value = "";
+}
+
+function getVars() {
+  return {
+    agent: (document.getElementById("varAgent").value || "").trim(),
+    user: (document.getElementById("varUser").value || "").trim(),
+    chamado: (document.getElementById("varChamado").value || "").trim(),
+    ilha: (document.getElementById("varIlha").value || "").trim(),
+    saudacao: obterSaudacao()
+  };
+}
+
+function salvarVars() {
+  if (!USUARIO_ATUAL) return;
+  try {
+    localStorage.setItem(storageKey("dialogoVars"), JSON.stringify({
+      // não grava agent — sempre vem do login
+      user: document.getElementById("varUser").value,
+      chamado: document.getElementById("varChamado").value,
+      ilha: document.getElementById("varIlha").value
+    }));
+  } catch (e) {}
+  atualizarSaudacao();
+}
+
+function carregarVarsLocais() {
+  // Limpa tudo antes de carregar dados da conta atual
+  limparCamposDialogo();
+  if (!USUARIO_ATUAL) return;
+  try {
+    var raw = localStorage.getItem(storageKey("dialogoVars"));
+    if (!raw) return;
+    var v = JSON.parse(raw);
+    // Cliente / chamado / ilha só desta conta
+    if (v.user) document.getElementById("varUser").value = v.user;
+    if (v.chamado) document.getElementById("varChamado").value = v.chamado;
+    if (v.ilha) document.getElementById("varIlha").value = v.ilha;
+  } catch (e) {}
+}
+
+/* ---------- Substituição de placeholders ---------- */
+function aplicarVariaveis(texto) {
+  var v = getVars();
+  var agent = v.agent || "[agent_name]";
+  var user = v.user || "[user_name]";
+  var chamado = v.chamado || "[Nº do chamado]";
+  var ilha = v.ilha || "[nome da ilha]";
+  var saudacao = v.saudacao;
+
+  var t = String(texto || "");
+
+  // Remove qualquer menção a número da ilha
+  t = t.replace(/\s*,?\s*na opção\s*\[n[uú]mero da ilha\]/gi, "");
+  t = t.replace(/\[n[uú]mero da ilha\]/gi, "");
+
+  // Ordem: padrões mais específicos primeiro
+  var reps = [
+    [/\[nome da ilha\]/gi, ilha],
+    [/\[Nome da ilha\]/gi, ilha],
+    [/\[ilha\]/gi, ilha],
+
+    [/\[saudação\]/gi, saudacao],
+    [/\[saudacao\]/gi, saudacao],
+    [/\[agent_name\]/gi, agent],
+    [/\[agent name\]/gi, agent],
+    [/\[nome do agente\]/gi, agent],
+    [/\[user_name\]/gi, user],
+    [/\[user name\]/gi, user],
+    [/\[nome do usuário\]/gi, user],
+    [/\[nome do usuario\]/gi, user],
+    [/\[Nome do cliente\]/gi, user],
+    [/\[nome do cliente\]/gi, user],
+    [/\[Identificação do usuário\]/gi, user],
+    [/\[Identificação do usuario\]/gi, user],
+    [/\[Identificación del usuario\]/gi, user],
+    [/\[Nº do chamado\]/gi, chamado],
+    [/\[N° do chamado\]/gi, chamado],
+    [/\[nº do chamado\]/gi, chamado],
+    [/\[n° do chamado\]/gi, chamado],
+    [/\[numero do chamado\]/gi, chamado],
+    [/\[número do chamado\]/gi, chamado],
+    [/\[Nº do registro\]/gi, chamado],
+    [/\[nº do registro\]/gi, chamado],
+    [/\[nº do registro\]/gi, chamado],
+    [/\bINCXXXXXXXX\b/gi, chamado !== "[Nº do chamado]" ? chamado : "INCXXXXXXXX"],
+    [/\bxxxx\b/g, chamado !== "[Nº do chamado]" ? chamado : "xxxx"]
+  ];
+
+  reps.forEach(function (pair) {
+    t = t.replace(pair[0], pair[1]);
+  });
+
+  return t;
+}
+
+/* ---------- Usuário logado (/api/me) ---------- */
+
+async function carregarModeloDialogoAPI() {
+  try {
+    var resp = await fetch("/api/modelo-dialogo", {
+      credentials: "same-origin",
+      headers: { "Accept": "application/json" }
+    });
+    if (resp.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    var data = await resp.json();
+    var d = (data && data.dados) ? data.dados : data;
+    if (d && Array.isArray(d.scripts) && d.scripts.length) {
+      SCRIPTS = d.scripts;
+    }
+    atualizarBannerModelo(d || {});
+  } catch (e) {
+    console.warn("Modelo diálogo API:", e);
+    SCRIPTS = Array.isArray(SCRIPTS_FALLBACK) ? SCRIPTS_FALLBACK.slice() : [];
+    atualizarBannerModelo({ precisa_atualizar: false, total_scripts: SCRIPTS.length });
+  }
+  montarIndice();
+  render();
+}
+
+function atualizarBannerModelo(st) {
+  var el = document.getElementById("bannerModelo");
+  if (!el) return;
+  var total = st.total_scripts != null ? st.total_scripts : (SCRIPTS || []).length;
+  var url = st.fonte_url || "https://petrobras.service-now.com/cs?id=kb_article_view&sysparm_article=KB0029502";
+  var dias = st.dias_desde_atualizacao;
+  var intervalo = st.intervalo_dias || 5;
+  if (st.precisa_atualizar) {
+    el.style.display = "flex";
+    el.className = "banner-modelo";
+    el.innerHTML =
+      "<div>⚠️ O Modelo de Diálogo pode estar desatualizado" +
+      (dias != null ? (" (última atualização há <strong>" + dias + " dia(s)</strong>)") : "") +
+      ". Confira a KB e peça ao admin para atualizar no painel.</div>" +
+      "<div><a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\">Abrir KB0029502</a></div>";
+  } else {
+    el.style.display = "flex";
+    el.className = "banner-modelo ok";
+    var extra = st.atualizado_em ? (" · atualizado em " + String(st.atualizado_em).replace("T", " ").slice(0, 16)) : "";
+    el.innerHTML =
+      "<div>✅ Modelo ativo: <strong>" + total + "</strong> script(s)" + extra +
+      " · revisão a cada " + intervalo + " dia(s)</div>" +
+      "<div><a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\">Ver KB</a></div>";
+  }
+}
+
+async function carregarUsuarioLogado() {
+  try {
+    var resp = await fetch("/api/me", {
+      credentials: "same-origin",
+      headers: { "Accept": "application/json" }
+    });
+    if (responseStatus401(resp)) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!resp.ok) return;
+
+    var data = await resp.json();
+    var u = (data && data.usuario && typeof data.usuario === "object")
+      ? data.usuario
+      : (data && data.dados) ? data.dados : data;
+
+    var nome = (u && (u.nome || u.name)) || "";
+    var login = (u && (u.usuario || u.username)) || "";
+
+    // Isola dados por conta logada
+    USUARIO_ATUAL = String(login || nome || "").trim();
+    carregarVarsLocais();
+
+    // Nome do atendente SEMPRE do usuário logado (não de outra conta)
+    var agentInput = document.getElementById("varAgent");
+    if (agentInput) {
+      agentInput.value = nome || login || "";
+    }
+
+    var perm = (u && (u.permissao || u.role)) || "";
+    var adm = document.getElementById("linkAdmin");
+    if (adm && perm === "admin") adm.style.display = "";
+    var aud = document.getElementById("linkAuditoria");
+    if (aud && perm === "admin") aud.style.display = "";
+  } catch (e) {
+    console.warn("api/me:", e);
+  }
+}
+
+function responseStatus401(resp) {
+  return resp && resp.status === 401;
+}
+
+/* ---------- UI índice / lista ---------- */
+function montarIndice() {
+  var nav = document.getElementById("indiceNav");
+  if (!nav) return;
+  var html = '<button type="button" class="nav-link indice-item active" data-sec="" onclick="filtrarSecao(\'\', this)">Todos os scripts</button>';
+  SECOES.forEach(function (sec) {
+    html += '<button type="button" class="nav-link indice-item" data-sec="' + escAttr(sec) + '" onclick="filtrarSecao(\'' + escAttr(sec) + '\', this)">' +
+      esc(sec) + '</button>';
+  });
+  nav.innerHTML = html;
+}
+
+var secaoAtual = "";
+
+function filtrarSecao(sec, btn) {
+  secaoAtual = sec || "";
+  document.querySelectorAll("#indiceNav .indice-item").forEach(function (el) {
+    el.classList.remove("active");
+  });
+  if (btn) btn.classList.add("active");
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function render() {
+  var termo = (document.getElementById("busca").value || "").toLowerCase().trim();
+  var box = document.getElementById("conteudo");
+
+  var lista = SCRIPTS.filter(function (s) {
+    if (secaoAtual && s.tag !== secaoAtual) return false;
+    if (!termo) return true;
+    var blob = [s.titulo, s.texto, s.tag, s.ordem].join(" ").toLowerCase();
+    return blob.indexOf(termo) !== -1;
+  });
+
+  document.getElementById("totalLabel").textContent = String(lista.length);
+
+  if (!lista.length) {
+    box.innerHTML = '<div class="empty">Nenhum script encontrado.</div>';
+    return;
+  }
+
+  var grupos = [];
+  var mapa = {};
+  lista.forEach(function (s) {
+    if (!mapa[s.tag]) {
+      mapa[s.tag] = [];
+      grupos.push(s.tag);
+    }
+    mapa[s.tag].push(s);
+  });
+
+  var html = "";
+  grupos.forEach(function (tag) {
+    html += '<div class="section-block">';
+    html += '<div class="section-title">' + esc(tag) + '</div>';
+    mapa[tag].forEach(function (s) {
+      html += '<div class="script-card" id="card-' + escAttr(s.id) + '">';
+      html += '<div class="script-head">';
+      html += '<div><div class="script-title">' + esc(s.emoji || "📜") + " " + esc(s.titulo) + '</div>';
+      html += '<div class="script-ordem">Item ' + esc(s.ordem || "") + '</div></div>';
+      html += '<div class="script-actions">';
+      html += '<button class="btn-preview" onclick="togglePreview(\'' + escAttr(s.id) + '\')">Ver com dados</button>';
+      html += '<button class="btn-copy" onclick="copiar(\'' + escAttr(s.id) + '\')">Copiar</button>';
+      html += '</div></div>';
+      html += '<div class="script-text">' + esc(s.texto) + '</div>';
+      html += '<div class="preview-box" id="prev-' + escAttr(s.id) + '">';
+      html += '<div class="preview-label">Mensagem gerada</div>';
+      html += '<div class="preview-body"></div>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  box.innerHTML = html;
+}
+
+function togglePreview(id) {
+  var box = document.getElementById("prev-" + id);
+  if (!box) return;
+  var body = box.querySelector(".preview-body");
+  var s = SCRIPTS.find(function (x) { return x.id === id; });
+  if (!s) return;
+
+  if (box.classList.contains("show")) {
+    box.classList.remove("show");
+    return;
+  }
+  body.textContent = aplicarVariaveis(s.texto);
+  box.classList.add("show");
+}
+
+function copiar(id) {
+  var s = SCRIPTS.find(function (x) { return x.id === id; });
+  if (!s) return;
+
+  var texto = aplicarVariaveis(s.texto);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(function () {
+      toast("Mensagem copiada com os dados preenchidos!");
+    }).catch(function () {
+      fallbackCopy(texto);
+    });
+  } else {
+    fallbackCopy(texto);
+  }
+}
+
+function fallbackCopy(texto) {
+  var ta = document.createElement("textarea");
+  ta.value = texto;
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    toast("Mensagem copiada com os dados preenchidos!");
+  } catch (e) {
+    toast("Não foi possível copiar", true);
+  }
+  document.body.removeChild(ta);
+}
+
+function toast(msg, isError) {
+  var el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (isError ? " error" : "");
+  setTimeout(function () { el.classList.remove("show"); }, 2400);
+}
+
+function esc(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escAttr(v) {
+  return String(v == null ? "" : v)
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
+}
+
+/* ---------- Init ---------- */
+// Só carrega variáveis depois de identificar o usuário logado
+atualizarSaudacao();
+setInterval(atualizarSaudacao, 60000);
+montarIndice();
+render();
+carregarUsuarioLogado();
+carregarModeloDialogoAPI();
+</script>
+</body>
+</html>
