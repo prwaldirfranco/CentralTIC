@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: central-tic
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python central_tic_v4_corrigido.py
+    envVars:
+      - key: HOST
+        value: "0.0.0.0"
+      - key: FORCE_PORT
+        value: "1"
+      - key: COOKIE_SECURE
+        value: "1"
