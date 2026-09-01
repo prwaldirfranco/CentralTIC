@@ -1,0 +1,2 @@
+# Central TIC — Python puro (sem dependências externas)
+# Mantido para plataformas de deploy (Render, Railway, etc.)
