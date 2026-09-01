@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administração — Central TIC</title>
+<style>
+:root {
+  --primary: #005ca9;
+  --primary-dark: #003f73;
+  --success: #198754;
+  --danger: #dc3545;
+  --bg: #f4f6f9;
+  --border: #dfe3e8;
+  --text: #212529;
+  --muted: #6c757d;
+  --sidebar-width: 260px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+button, input, select { font-family: inherit; }
+button { cursor: pointer; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+  color: white;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  display: flex; flex-direction: column; z-index: 100;
+}
+.logo-area { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,.15); }
+.logo-area h1 { font-size: 18px; }
+.logo-area span { font-size: 12px; opacity: .8; display: block; margin-top: 4px; }
+.menu { padding: 14px 10px; flex: 1; overflow-y: auto; }
+.menu-title { font-size: 10px; text-transform: uppercase; opacity: .55; padding: 10px 12px 6px; letter-spacing: .8px; }
+.menu a {
+  display: flex; align-items: center; gap: 10px;
+  color: white; text-decoration: none; padding: 11px 12px;
+  border-radius: 7px; font-size: 13px; margin-bottom: 3px;
+}
+.menu a:hover, .menu a.active { background: rgba(255,255,255,.14); }
+.sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,.15); }
+.sidebar-footer a {
+  display: block; text-align: center; color: white; text-decoration: none;
+  border: 1px solid rgba(255,255,255,.3); padding: 9px; border-radius: 6px; font-size: 12px;
+}
+.main { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); min-height: 100vh; }
+.topbar {
+  height: 60px; background: white; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
+}
+.page-title { font-size: 17px; font-weight: 600; }
+.content { padding: 22px; }
+.card {
+  background: white; border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px; margin-bottom: 16px;
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.btn {
+  border: none; border-radius: 6px; padding: 9px 14px; font-size: 12px; font-weight: 600;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: #e9ecef; color: #333; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-sm { padding: 6px 10px; font-size: 11px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.form-group label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 5px; color: var(--muted); }
+.form-group input, .form-group select {
+  width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 9px 10px; font-size: 13px; outline: none;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,92,169,.12); }
+.form-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { background: #f7f8fa; text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+td { padding: 10px; border-bottom: 1px solid #edf0f2; vertical-align: middle; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+.badge-admin { background: #cfe2ff; color: #084298; }
+.badge-user { background: #e2e3e5; color: #41464b; }
+.badge-ok { background: #d1e7dd; color: #0f5132; }
+.badge-off { background: #f8d7da; color: #842029; }
+.msg {
+  display: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px;
+}
+.msg.show { display: block; }
+.msg.error { background: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+.msg.ok { background: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+.hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.empty { text-align: center; color: var(--muted); padding: 24px; }
+@media (max-width: 900px) {
+  .sidebar { position: relative; width: 100%; }
+  .main { margin-left: 0; width: 100%; }
+  .app { flex-direction: column; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo-area">
+      <h1>Central TIC</h1>
+      <span>Administração</span>
+    </div>
+    <nav class="menu">
+      <div class="menu-title">Principal</div>
+      <a href="/#dashboard">📊 Dashboard</a>
+      <a href="/aplicacoes">🖥️ Aplicações</a>
+      <a href="/dialogo">📋 Modelo de Diálogo</a>
+      <div class="menu-title">Gestão</div>
+      <a href="/admin" class="active">⚙️ Usuários</a>
+      <a href="/#auditoria">🔎 Auditoria</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="/logout">🚪 Sair</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title">⚙️ Administração de usuários</div>
+      <div id="userLabel" style="font-size:12px;color:var(--muted);">—</div>
+    </header>
+
+    <section class="content">
+      <div class="msg" id="msg"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="formTitle">Novo usuário</div>
+            <div class="card-sub">Campos com * são obrigatórios. Senha mínima: 6 caracteres.</div>
+          </div>
+        </div>
+
+        <form id="formUser" onsubmit="return salvarUsuario(event)">
+          <input type="hidden" id="editId" value="">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Login (usuário) *</label>
+              <input id="fUsuario" autocomplete="off" required maxlength="50" placeholder="ex.: joao.silva">
+            </div>
+            <div class="form-group">
+              <label>Nome completo *</label>
+              <input id="fNome" required maxlength="120" placeholder="ex.: João Silva">
+            </div>
+            <div class="form-group">
+              <label>E-mail</label>
+              <input id="fEmail" type="email" maxlength="200" placeholder="opcional">
+            </div>
+            <div class="form-group">
+              <label>Permissão *</label>
+              <select id="fPermissao">
+                <option value="usuario">Usuário (N1)</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label id="labelSenha">Senha *</label>
+              <input id="fSenha" type="password" minlength="6" maxlength="128" autocomplete="new-password" placeholder="mínimo 6 caracteres">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="fAtivo">
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint" id="senhaHint">Na criação a senha é obrigatória. Na edição, deixe em branco para não alterar.</div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar usuário</button>
+            <button type="button" class="btn btn-secondary" onclick="limparForm()">Limpar</button>
+          </div>
+        </form>
+      </div>
+
+      
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🖥️ Atualizar aplicações (Excel)</div>
+            <div class="card-sub">Envie a planilha .xlsx — substitui o arquivo automaticamente (com backup)</div>
+          </div>
+        </div>
+        <div id="appsInfo" class="hint" style="margin-bottom:12px;">Carregando informações...</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <input type="file" id="appsFile" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="font-size:13px;">
+          <button type="button" class="btn btn-primary" id="btnUploadApps" onclick="enviarPlanilhaApps()">Enviar e atualizar</button>
+        </div>
+        <div class="hint" style="margin-top:10px;">
+          Formato esperado: colunas como <strong>código do software</strong>, <strong>sigla</strong>, <strong>nome da aplicação</strong>, <strong>mesa</strong>.
+          Máximo 15 MB. O arquivo anterior fica salvo em <code>backup/</code>.
+        </div>
+        <div class="msg" id="msgApps" style="margin-top:12px;"></div>
+      </div>
+
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">📋 Modelo de Diálogo (KB)</div>
+            <div class="card-sub">Fonte: KB0029502 · atualize quando a KB mudar (alerta a cada 5 dias)</div>
+          </div>
+        </div>
+        <div id="modeloInfo" class="hint" style="margin-bottom:12px;">Carregando status...</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;">
+          <a class="btn btn-secondary" id="linkKbModelo" href="https://petrobras.service-now.com/cs?id=kb_article_view&sysparm_article=KB0029502" target="_blank" rel="noopener">Abrir KB no ServiceNow</a>
+          <button type="button" class="btn btn-secondary" onclick="exportarModeloDialogo()">Exportar JSON atual</button>
+          <button type="button" class="btn btn-primary" onclick="marcarModeloRevisado()">Marquei como revisado hoje</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <input type="file" id="modeloFile" accept=".json,application/json" style="font-size:13px;">
+          <button type="button" class="btn btn-primary" onclick="enviarModeloDialogo()">Enviar JSON e atualizar</button>
+        </div>
+        <div class="hint" style="margin-top:10px;">
+          O ServiceNow exige login, então a atualização automática completa da página da KB não é confiável.
+          Fluxo recomendado: abra a KB → confira mudanças → mantenha o JSON do modelo atualizado → envie aqui.
+          O sistema avisa na tela do diálogo quando passar de <strong>5 dias</strong> sem revisão.
+        </div>
+        <div class="msg" id="msgModelo" style="margin-top:12px;"></div>
+      </div>
+
+<div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Usuários cadastrados</div>
+            <div class="card-sub"><span id="totalUsers">0</span> registro(s)</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="carregarUsuarios()">Atualizar</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Login</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Permissão</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyUsers">
+              <tr><td colspan="6" class="empty">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+let usuarios = [];
+let currentUser = null;
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const ok = await carregarMe();
+  if (!ok) return;
+  await carregarUsuarios();
+  await carregarInfoApps();
+  await carregarStatusModelo();
+});
+
+async function carregarMe() {
+  try {
+    const r = await fetch("/api/me", { credentials: "same-origin", headers: { "Accept": "application/json" } });
+    if (r.status === 401) {
+      window.location.href = "/login";
+      return false;
+    }
+    if (!r.ok) {
+      showMsg("Não foi possível validar a sessão.", true);
+      return false;
+    }
+    const data = await r.json();
+    const u = (data && data.usuario && typeof data.usuario === "object") ? data.usuario
+      : (data && data.dados) ? data.dados : data;
+    currentUser = {
+      usuario: (u && (u.usuario || u.username)) || "",
+      nome: (u && (u.nome || u.name)) || "",
+      permissao: (u && (u.permissao || u.role)) || ""
+    };
+    document.getElementById("userLabel").textContent =
+      (currentUser.nome || currentUser.usuario) + " · " + currentUser.permissao;
+
+    if (currentUser.permissao !== "admin") {
+      showMsg("Acesso restrito a administradores.", true);
+      setTimeout(function () { window.location.href = "/"; }, 1500);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    showMsg("Erro de sessão: " + e.message, true);
+    return false;
+  }
+}
+
+async function api(url, options) {
+  options = options || {};
+  const opts = {
+    credentials: "same-origin",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    method: options.method || "GET",
+    body: options.body || undefined
+  };
+  const r = await fetch(url, opts);
+  let data = null;
+  try { data = await r.json(); } catch (e) { data = null; }
+
+  if (r.status === 401) {
+    window.location.href = "/login";
+    throw new Error("Não autenticado");
+  }
+  if (!r.ok) {
+    const msg = (data && (data.erro || data.mensagem || data.message)) || ("HTTP " + r.status);
+    throw new Error(msg);
+  }
+  return data;
+}
+
+async function carregarUsuarios() {
+  try {
+    const data = await api("/api/usuarios");
+    if (Array.isArray(data)) usuarios = data;
+    else if (data && Array.isArray(data.dados)) usuarios = data.dados;
+    else if (data && Array.isArray(data.usuarios)) usuarios = data.usuarios;
+    else usuarios = [];
+    renderTabela();
+  } catch (e) {
+    showMsg("Falha ao carregar usuários: " + e.message, true);
+    document.getElementById("tbodyUsers").innerHTML =
+      '<tr><td colspan="6" class="empty">Erro ao carregar.</td></tr>';
+  }
+}
+
+function renderTabela() {
+  document.getElementById("totalUsers").textContent = String(usuarios.length);
+  const tb = document.getElementById("tbodyUsers");
+  if (!usuarios.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="empty">Nenhum usuário cadastrado.</td></tr>';
+    return;
+  }
+  tb.innerHTML = usuarios.map(function (u) {
+    const id = escAttr(u.id || "");
+    const perm = (u.permissao === "admin")
+      ? '<span class="badge badge-admin">Admin</span>'
+      : '<span class="badge badge-user">Usuário</span>';
+    const st = (u.ativo === false)
+      ? '<span class="badge badge-off">Inativo</span>'
+      : '<span class="badge badge-ok">Ativo</span>';
+    return '<tr>' +
+      '<td><strong>' + esc(u.usuario || "") + '</strong></td>' +
+      '<td>' + esc(u.nome || "") + '</td>' +
+      '<td>' + esc(u.email || "—") + '</td>' +
+      '<td>' + perm + '</td>' +
+      '<td>' + st + '</td>' +
+      '<td style="white-space:nowrap">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="editarUsuario(\'' + id + '\')">Editar</button> ' +
+      '</td></tr>';
+  }).join("");
+}
+
+function limparForm() {
+  document.getElementById("editId").value = "";
+  document.getElementById("fUsuario").value = "";
+  document.getElementById("fNome").value = "";
+  document.getElementById("fEmail").value = "";
+  document.getElementById("fPermissao").value = "usuario";
+  document.getElementById("fSenha").value = "";
+  document.getElementById("fAtivo").value = "true";
+  document.getElementById("fUsuario").disabled = false;
+  document.getElementById("fSenha").required = true;
+  document.getElementById("labelSenha").textContent = "Senha *";
+  document.getElementById("formTitle").textContent = "Novo usuário";
+  document.getElementById("btnSalvar").textContent = "Salvar usuário";
+  document.getElementById("senhaHint").textContent = "Na criação a senha é obrigatória. Na edição, deixe em branco para não alterar.";
+}
+
+function editarUsuario(id) {
+  const u = usuarios.find(function (x) { return x.id === id; });
+  if (!u) return;
+  document.getElementById("editId").value = u.id || "";
+  document.getElementById("fUsuario").value = u.usuario || "";
+  document.getElementById("fUsuario").disabled = true;
+  document.getElementById("fNome").value = u.nome || "";
+  document.getElementById("fEmail").value = u.email || "";
+  document.getElementById("fPermissao").value = u.permissao === "admin" ? "admin" : "usuario";
+  document.getElementById("fSenha").value = "";
+  document.getElementById("fSenha").required = false;
+  document.getElementById("fAtivo").value = (u.ativo === false) ? "false" : "true";
+  document.getElementById("labelSenha").textContent = "Nova senha (opcional)";
+  document.getElementById("formTitle").textContent = "Editar usuário";
+  document.getElementById("btnSalvar").textContent = "Atualizar usuário";
+  document.getElementById("senhaHint").textContent = "Deixe a senha em branco para manter a atual.";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function salvarUsuario(ev) {
+  ev.preventDefault();
+  const editId = document.getElementById("editId").value.trim();
+  const usuario = document.getElementById("fUsuario").value.trim();
+  const nome = document.getElementById("fNome").value.trim();
+  const email = document.getElementById("fEmail").value.trim();
+  const permissao = document.getElementById("fPermissao").value;
+  const senha = document.getElementById("fSenha").value;
+  const ativo = document.getElementById("fAtivo").value === "true";
+
+  if (!usuario || !nome) {
+    showMsg("Login e nome são obrigatórios.", true);
+    return false;
+  }
+
+  if (!editId && (!senha || senha.length < 6)) {
+    showMsg("Senha obrigatória com no mínimo 6 caracteres.", true);
+    return false;
+  }
+  if (editId && senha && senha.length < 6) {
+    showMsg("A nova senha deve ter no mínimo 6 caracteres.", true);
+    return false;
+  }
+
+  const payload = {
+    usuario: usuario,
+    nome: nome,
+    email: email,
+    permissao: permissao,
+    ativo: ativo
+  };
+  if (senha) payload.senha = senha;
+
+  try {
+    document.getElementById("btnSalvar").disabled = true;
+    if (!editId) {
+      await api("/api/usuarios", { method: "POST", body: JSON.stringify(payload) });
+      showMsg("Usuário criado com sucesso.", false);
+    } else {
+      await api("/api/usuarios/" + encodeURIComponent(editId), {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+      showMsg("Usuário atualizado com sucesso.", false);
+    }
+    limparForm();
+    await carregarUsuarios();
+  } catch (e) {
+    showMsg("Não foi possível salvar: " + e.message, true);
+  } finally {
+    document.getElementById("btnSalvar").disabled = false;
+  }
+  return false;
+}
+
+function showMsg(text, isError) {
+  const el = document.getElementById("msg");
+  el.textContent = text;
+  el.className = "msg show " + (isError ? "error" : "ok");
+  if (!isError) {
+    setTimeout(function () { el.classList.remove("show"); }, 4000);
+  }
+}
+
+function esc(v) {
+  return String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function escAttr(v) {
+  return String(v == null ? "" : v).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+async function carregarInfoApps() {
+  const el = document.getElementById("appsInfo");
+  if (!el) return;
+  try {
+    const data = await api("/api/apps");
+    let lista = [];
+    if (Array.isArray(data)) lista = data;
+    else if (data && Array.isArray(data.dados)) lista = data.dados;
+    else if (data && Array.isArray(data.aplicacoes)) lista = data.aplicacoes;
+    el.textContent = "Aplicações carregadas no sistema agora: " + lista.length + ".";
+  } catch (e) {
+    el.textContent = "Não foi possível obter o total de aplicações.";
+  }
+}
+
+function showMsgApps(text, isError) {
+  const el = document.getElementById("msgApps");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "msg show " + (isError ? "error" : "ok");
+  if (!isError) {
+    setTimeout(function () { el.classList.remove("show"); }, 5000);
+  }
+}
+
+async function enviarPlanilhaApps() {
+  const input = document.getElementById("appsFile");
+  const btn = document.getElementById("btnUploadApps");
+  if (!input || !input.files || !input.files[0]) {
+    showMsgApps("Selecione um arquivo .xlsx primeiro.", true);
+    return;
+  }
+  const file = input.files[0];
+  const nome = (file.name || "").toLowerCase();
+  if (!nome.endsWith(".xlsx") && !nome.endsWith(".xlsm")) {
+    showMsgApps("O arquivo precisa ser .xlsx", true);
+    return;
+  }
+  if (file.size > 15 * 1024 * 1024) {
+    showMsgApps("Arquivo muito grande (máx. 15 MB).", true);
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append("arquivo", file, file.name);
+
+  try {
+    if (btn) btn.disabled = true;
+    showMsgApps("Enviando planilha...", false);
+    const r = await fetch("/api/apps/upload", {
+      method: "POST",
+      credentials: "same-origin",
+      body: fd
+      // não definir Content-Type — o browser coloca o boundary
+    });
+    let data = null;
+    try { data = await r.json(); } catch (e) { data = null; }
+
+    if (r.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    if (!r.ok) {
+      const msg = (data && (data.erro || data.mensagem || data.message)) || ("HTTP " + r.status);
+      throw new Error(msg);
+    }
+    const total = data && data.dados && data.dados.total != null ? data.dados.total : "?";
+    showMsgApps((data && data.mensagem) || ("Planilha atualizada. Total: " + total), false);
+    input.value = "";
+    await carregarInfoApps();
+  } catch (e) {
+    showMsgApps("Falha no envio: " + e.message, true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+
+function showMsgModelo(text, isError) {
+  const el = document.getElementById("msgModelo");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "msg show " + (isError ? "error" : "ok");
+}
+
+async function carregarStatusModelo() {
+  const el = document.getElementById("modeloInfo");
+  if (!el) return;
+  try {
+    const data = await api("/api/modelo-dialogo/status");
+    const d = (data && data.dados) ? data.dados : data;
+    const link = document.getElementById("linkKbModelo");
+    if (link && d.fonte_url) link.href = d.fonte_url;
+    const dias = d.dias_desde_atualizacao;
+    const when = d.atualizado_em ? String(d.atualizado_em).replace("T", " ").slice(0, 16) : "nunca";
+    let txt = "Scripts: " + (d.total_scripts || 0) + " · Última revisão: " + when;
+    if (d.atualizado_por) txt += " por " + d.atualizado_por;
+    if (dias != null) txt += " · há " + dias + " dia(s)";
+    txt += " · intervalo: " + (d.intervalo_dias || 5) + " dia(s)";
+    if (d.precisa_atualizar) txt += " · ⚠️ PRECISA REVISAR";
+    el.textContent = txt;
+  } catch (e) {
+    el.textContent = "Não foi possível carregar status do modelo.";
+  }
+}
+
+async function exportarModeloDialogo() {
+  try {
+    const data = await api("/api/modelo-dialogo");
+    const d = (data && data.dados) ? data.dados : data;
+    const blob = new Blob([JSON.stringify({
+      fonte_url: d.fonte_url,
+      kb: d.kb,
+      titulo: d.titulo || "Modelo de Diálogo",
+      intervalo_dias: d.intervalo_dias || 5,
+      scripts: d.scripts || []
+    }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "modelo_dialogo.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (e) {
+    showMsgModelo("Falha ao exportar: " + e.message, true);
+  }
+}
+
+async function enviarModeloDialogo() {
+  const input = document.getElementById("modeloFile");
+  if (!input || !input.files || !input.files[0]) {
+    showMsgModelo("Selecione um arquivo JSON do modelo.", true);
+    return;
+  }
+  const file = input.files[0];
+  const fd = new FormData();
+  fd.append("arquivo", file, file.name);
+  try {
+    showMsgModelo("Enviando modelo...", false);
+    const r = await fetch("/api/modelo-dialogo/upload", {
+      method: "POST",
+      credentials: "same-origin",
+      body: fd
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.status === 401) { location.href = "/login"; return; }
+    if (!r.ok) throw new Error(data.erro || data.mensagem || ("HTTP " + r.status));
+    showMsgModelo(data.mensagem || "Modelo atualizado.", false);
+    input.value = "";
+    await carregarStatusModelo();
+  } catch (e) {
+    showMsgModelo("Falha: " + e.message, true);
+  }
+}
+
+async function marcarModeloRevisado() {
+  try {
+    const data = await api("/api/modelo-dialogo/revisado", {
+      method: "POST",
+      body: JSON.stringify({ intervalo_dias: 5 })
+    });
+    showMsgModelo((data && data.mensagem) || "Revisão registrada.", false);
+    await carregarStatusModelo();
+  } catch (e) {
+    showMsgModelo("Falha: " + e.message, true);
+  }
+}
+
+</script>
+</body>
+</html>
