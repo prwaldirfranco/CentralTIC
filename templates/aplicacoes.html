@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicações — Central TIC</title>
+    <style>
+        :root {
+            --primary: #005ca9;
+            --primary-dark: #003f73;
+            --secondary: #00a3e0;
+            --success: #198754;
+            --warning: #f0ad4e;
+            --danger: #dc3545;
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --border: #dfe3e8;
+            --text: #212529;
+            --muted: #6c757d;
+            --sidebar-width: 260px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        button, input, textarea, select { font-family: inherit; }
+        button { cursor: pointer; }
+        .app { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+            color: white;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-area {
+            padding: 22px 18px;
+            border-bottom: 1px solid rgba(255,255,255,.15);
+        }
+        .logo-area h1 { font-size: 20px; font-weight: 700; }
+        .logo-area span { display: block; margin-top: 4px; font-size: 12px; opacity: .8; }
+        .user-box {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255,255,255,.15);
+        }
+        .user-name { font-weight: 600; font-size: 14px; }
+        .user-role { font-size: 12px; opacity: .75; margin-top: 4px; }
+        .menu { padding: 14px 10px; flex: 1; overflow-y: auto; }
+        .menu-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: .55;
+            padding: 10px 12px 6px;
+            letter-spacing: .8px;
+        }
+        .menu a {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: white;
+            padding: 11px 12px;
+            margin-bottom: 3px;
+            border-radius: 7px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: .2s;
+        }
+        .menu a:hover, .menu a.active { background: rgba(255,255,255,.14); }
+        .menu-icon { width: 22px; text-align: center; font-size: 16px; }
+        .sidebar-footer {
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,.15);
+        }
+        .logout-btn {
+            width: 100%;
+            border: 1px solid rgba(255,255,255,.3);
+            background: transparent;
+            color: white;
+            padding: 9px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,.1); }
+
+        .main {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+        }
+        .topbar {
+            height: 66px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+        .mobile-menu {
+            display: none;
+            border: none;
+            background: transparent;
+            font-size: 22px;
+        }
+        .page-title { font-size: 18px; font-weight: 600; }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .status-online {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--success);
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+        .clock { font-size: 12px; color: var(--muted); }
+
+        .content { padding: 24px; }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,.03);
+            margin-bottom: 18px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .card-title { font-size: 15px; font-weight: 600; }
+        .card-subtitle { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+        .btn {
+            border: none;
+            border-radius: 6px;
+            padding: 9px 13px;
+            font-size: 12px;
+            transition: .2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #146c43; }
+        .btn-secondary { background: #e9ecef; color: #343a40; }
+        .btn-secondary:hover { background: #dde2e6; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: #333; }
+        .btn-sm { padding: 6px 9px; font-size: 11px; }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .form-control {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 9px 10px;
+            background: white;
+            outline: none;
+            font-size: 12px;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0,92,169,.1);
+        }
+        .filters .form-control { min-width: 200px; flex: 1; max-width: 420px; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th {
+            background: #f7f8fa;
+            color: #495057;
+            font-weight: 600;
+            text-align: left;
+            padding: 11px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 11px;
+            border-bottom: 1px solid #edf0f2;
+            vertical-align: middle;
+        }
+        tr:hover td { background: #fafbfc; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 7px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .badge-ok { background: #d1e7dd; color: #0f5132; }
+        .badge-tag {
+            background: #fff3cd;
+            color: #664d03;
+            margin-bottom: 8px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+        .result-count {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 12px;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .info-box strong { color: var(--primary-dark); }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            border: 1px solid var(--border);
+            background: white;
+            padding: 9px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .scripts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .script-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            transition: .2s;
+            position: relative;
+        }
+        .script-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 3px 10px rgba(0,0,0,.06);
+        }
+        .script-title { font-size: 13px; font-weight: 600; padding-right: 28px; }
+        .script-id { font-size: 10px; color: var(--muted); margin-top: 3px; }
+        .script-category {
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .script-text {
+            margin-top: 9px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #495057;
+            min-height: 50px;
+            max-height: 120px;
+            overflow: hidden;
+            white-space: pre-wrap;
+        }
+        .script-actions {
+            margin-top: 13px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .fav-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 16px;
+        }
+        .stat-label { font-size: 11px; color: var(--muted); }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 4px;
+            color: var(--primary-dark);
+        }
+
+        .form-chamado {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .form-chamado .form-control { flex: 1; min-width: 160px; }
+        .form-chamado-tipo { position: relative; flex: 1; min-width: 180px; }
+        .tipo-sugestoes {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        }
+        .tipo-sugestoes.show { display: block; }
+        .tipo-item {
+            padding: 10px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .tipo-item:hover { background: #f0f7ff; }
+        .tipo-item:last-child { border-bottom: none; }
+
+        .resumo {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .resumo h3 {
+            font-size: 14px;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+        .resumo-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .resumo-item:last-child { border-bottom: none; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            padding: 22px;
+            box-shadow: 0 15px 50px rgba(0,0,0,.2);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .modal-title { font-size: 17px; font-weight: 600; }
+        .close-modal {
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            color: var(--muted);
+        }
+        .form-group { margin-bottom: 13px; }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        textarea.form-control {
+            width: 100%;
+            min-height: 110px;
+            resize: vertical;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 18px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .toast {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            background: #212529;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 7px;
+            font-size: 12px;
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+            transition: .25s;
+            z-index: 3000;
+            max-width: 320px;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .links-uteis {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .links-uteis a {
+            display: inline-block;
+            padding: 8px 12px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .links-uteis a.alt { background: #1f6f8b; }
+        .links-uteis a.green { background: #2c7a3f; }
+
+        @media (max-width: 1100px) {
+            .scripts-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 800px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; width: 100%; }
+            .mobile-menu { display: block; }
+            .scripts-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr; }
+            .content { padding: 15px; }
+            .topbar { padding: 0 15px; }
+        }
+    
+        .fav-web-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .fav-chip {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: linear-gradient(145deg, #ffffff 0%, #f0f6fc 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 14px 12px;
+            cursor: pointer;
+            transition: .18s ease;
+            min-height: 96px;
+            position: relative;
+            overflow: hidden;
+        }
+        .fav-chip:hover {
+            border-color: var(--primary);
+            box-shadow: 0 6px 18px rgba(0,92,169,.12);
+            transform: translateY(-2px);
+        }
+        .fav-chip::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+        .fav-chip-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        .fav-chip-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.3;
+        }
+        .fav-chip-url {
+            font-size: 11px;
+            color: var(--muted);
+            word-break: break-all;
+            line-height: 1.35;
+            max-height: 2.7em;
+            overflow: hidden;
+        }
+        .fav-chip-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+        .fav-chip-actions .btn { flex: 1; min-width: 64px; }
+        .fav-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--muted);
+            padding: 18px;
+            font-size: 13px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: #fafbfc;
+        }
+
+
+        .fav-dash-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .fav-dash-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            text-decoration: none;
+            color: var(--text);
+            transition: .15s ease;
+            max-width: 100%;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04);
+            cursor: pointer;
+        }
+        .fav-dash-item:hover {
+            border-color: var(--primary);
+            background: #f3f8fd;
+            box-shadow: 0 4px 12px rgba(0,92,169,.10);
+            transform: translateY(-1px);
+        }
+        .fav-dash-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #00a3e0);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .fav-dash-meta {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .fav-dash-name {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .fav-dash-url {
+            font-size: 11px;
+            color: var(--muted);
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .fav-dash-count {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <h1>Central TIC</h1>
+            <span>Atendimento Técnico N1</span>
+        </div>
+        <div class="user-box">
+            <div class="user-name" id="sidebarUserName">Carregando...</div>
+            <div class="user-role" id="sidebarUserRole">—</div>
+        </div>
+        <nav class="menu">
+            <div class="menu-title">Principal</div>
+            <a href="/#dashboard" id="menuDash"><span class="menu-icon">📊</span> Dashboard</a>
+            <a href="/#atendimento" id="menuAtend"><span class="menu-icon">💬</span> Atendimento</a>
+            <a href="/#busca" id="menuBusca"><span class="menu-icon">🔍</span> Busca Global</a>
+            <a href="/aplicacoes" id="menuApps" class="active"><span class="menu-icon">🖥️</span> Aplicações</a>
+
+            <div class="menu-title">Operação</div>
+            <a href="/chamado" id="menuChamados" ><span class="menu-icon">📞</span> Chamados</a>
+            <a href="/dialogo" id="menuDialogo"><span class="menu-icon">📋</span> Modelo de Diálogo</a>
+
+            <div class="menu-title">Base de Atendimento</div>
+            <a href="/aplicacoes#scripts" id="menuScripts"><span class="menu-icon">📜</span> Scripts</a>
+            <a href="/#kb" id="menuKb"><span class="menu-icon">📚</span> Knowledge Base</a>
+            <a href="/aplicacoes#favoritos" id="menuFavoritos"><span class="menu-icon">⭐</span> Favoritos</a>
+
+            <div class="menu-title">Gestão</div>
+            <a href="/#auditoria" id="menuAuditoria" style="display:none;"><span class="menu-icon">🔎</span> Auditoria</a>
+            <a href="/admin" id="linkAdmin" style="display:none;"><span class="menu-icon">⚙️</span> Administração</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">🚪 Sair do sistema</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
+                <div class="page-title">Aplicações & Atendimento</div>
+            </div>
+            <div class="topbar-right">
+                <div class="status-online">
+                    <span class="status-dot"></span> Online
+                </div>
+                <div class="clock" id="clock">--:--:--</div>
+            </div>
+        </header>
+
+        <section class="content">
+
+            <div class="info-box">
+                <strong>📞 Atendimento N1</strong><br>
+                Ramal: <strong>881</strong> ·
+                Externo: <strong>0800 881 0881</strong> ·
+                Teams: <strong>Assistente Petrobras</strong> ·
+                Fila: <strong>N1-SD_APNEG</strong>
+                <span style="float:right;color:var(--muted);" id="totalAppsLabel">0 aplicações</span>
+                <div class="links-uteis">
+                    <a href="https://petrobras.service-now.com/now/nav/ui/classic/params/target/%24pa_dashboard.do%3Fsysparm_dashboard%3D3b11ef811bf4651418feab853a4bcb65%26sysparm_tab%3De50342c51bd2295cb5fe20a0f54bcb53%26sysparm_cancelable%3Dtrue%26sysparm_editable%3Dundefined%26sysparm_active_panel%3Dfalse" target="_blank" rel="noopener">📋 Oferta TIC</a>
+                    <a href="https://petrobras.service-now.com/now/nav/ui/classic/params/target/incident_list.do%3Fsysparm_nostack%3Dtrue%26sysparm_query%3Dopened_by%253D872afd6a1b6e0a1049446280f54bcbb1%26sysparm_first_row%3D1%26sysparm_view%3D" target="_blank" rel="noopener">📋 Meus Chamados</a>
+                    <a class="alt" href="https://app.powerbi.com/groups/me/reports/228f9afc-3bc5-4b2b-a6f3-65754ec58b09/ReportSection0d48e55306d71eca02e1?experience=power-bi" target="_blank" rel="noopener">📊 Usuario B2B</a>
+                    <a class="green" href="https://identidade.petrobras.com.br/identityiq/home.jsf" target="_blank" rel="noopener">🔐 ID Petrobras</a>
+                    <a class="green" href="https://petrobras.service-now.com/cs?id=kb_article_view&sysparm_article=KB0031556" target="_blank" rel="noopener">🔑 Chaves Especiais</a>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="abrirAba('apps', this)">🔍 Busca</button>
+                <button class="tab" onclick="abrirAba('scripts', this)">💬 Scripts</button>
+                <button class="tab" onclick="abrirAba('chamados', this)">📞 Chamados</button>
+                <button class="tab" onclick="abrirAba('dashboard', this)">📊 Dashboard</button>
+                <button class="tab" onclick="abrirAba('favoritos', this)">⭐ Favoritos</button>
+            </div>
+
+            <!-- BUSCA -->
+            <div class="panel active" id="panel-apps">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Busca de Aplicações</div>
+                            <div class="card-subtitle">Código, sigla, nome ou mesa</div>
+                        </div>
+                    </div>
+                    <div class="filters" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <input class="form-control" id="searchInput" type="search"
+                            placeholder="Código, sigla, nome ou mesa..."
+                            oninput="filtrarApps()" autofocus style="flex:1;min-width:220px;">
+                        <button type="button" class="btn btn-success" onclick="abrirPsQRapidaBusca()" title="Abrir PsQ-Rapida com o termo da busca">
+                            PsQ-Rapida
+                        </button>
+                    </div>
+                    <div class="result-count" id="resultCount">Digite um termo para buscar.</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>⭐</th>
+                                    <th>Código</th>
+                                    <th>Sigla</th>
+                                    <th>Nome</th>
+                                    <th>Mesa</th>
+                                    <th>Status</th>
+                                    <th>Conhecimento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoApps">
+                                <tr><td colspan="7"><div class="empty">Digite acima para buscar...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCRIPTS -->
+            <div class="panel" id="panel-scripts">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Scripts de Atendimento</div>
+                            <div class="card-subtitle">Modelo de diálogo + scripts cadastrados</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="abrirModalScript()">+ Novo Script</button>
+                    </div>
+                    <div class="filters">
+                        <input class="form-control" id="scriptSearch" type="search"
+                            placeholder="Pesquisar scripts..." oninput="renderizarScripts()">
+                        <select class="form-control" id="scriptTagFilter" onchange="renderizarScripts()" style="max-width:260px;">
+                            <option value="">Todas as seções do Modelo de Diálogo</option>
+                        </select>
+                    </div>
+                    <div class="scripts-grid" id="gridScripts"></div>
+                </div>
+            </div>
+
+            <!-- CHAMADOS -->
+            <div class="panel" id="panel-chamados">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Chamados do Dia / Turno</div>
+                            <div class="card-subtitle">Controle local do seu atendimento (salvo neste navegador)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-chamado">
+                        <input class="form-control" id="chamadoNumero" placeholder="Número do chamado..." maxlength="20">
+                        <div class="form-chamado-tipo">
+                            <input class="form-control" id="chamadoTipo" placeholder="Tipo ou aplicação..."
+                                oninput="filtrarTipos()" autocomplete="off">
+                            <div class="tipo-sugestoes" id="tipoSugestoes"></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="adicionarChamado()">Adicionar</button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Chamado</th>
+                                    <th>Tipo / Aplicação</th>
+                                    <th>Horário</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoChamados"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="resumo" id="resumoChamados" style="display:none;">
+                        <h3>📊 Resumo do Turno</h3>
+                        <div class="resumo-item">
+                            <strong>Total de Chamados</strong>
+                            <span id="totalChamados">0</span>
+                        </div>
+                        <div id="detalheChamados"></div>
+                        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="exportarRelatorio()">📥 Exportar Relatório</button>
+                            <button class="btn btn-danger" onclick="limparChamados()">🗑️ Limpar turno</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div class="panel" id="panel-dashboard">
+                <div class="stats-row" id="dashboardStats"></div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">⭐ Favoritos da Web</div>
+                            <div class="card-subtitle">Clique para abrir · <span class="fav-dash-count" id="dashboardFavWebCount">0 links</span></div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" type="button" onclick="abrirAba('favoritos', null)">Gerenciar</button>
+                    </div>
+                    <div id="dashboardFavWeb" class="fav-dash-list"></div>
+                </div>
+
+                <div class="card" style="margin-top:16px;">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Visão geral</div>
+                            <div class="card-subtitle">Dados do turno e da base local</div>
+                        </div>
+                    </div>
+                    <div id="dashboardExtra" class="empty">Carregando...</div>
+                </div>
+            </div>
+
+            <!-- FAVORITOS -->
+            <div class="panel" id="panel-favoritos">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">⭐ Favoritos da Web</div>
+                            <div class="card-subtitle">Links rápidos — clique para abrir · salvos neste navegador</div>
+                        </div>
+                    </div>
+                    <div class="form-chamado" style="margin-bottom:14px;">
+                        <input type="hidden" id="favWebEditId" value="">
+                        <input class="form-control" id="favWebNome" placeholder="Nome do favorito..." maxlength="80">
+                        <input class="form-control" id="favWebUrl" placeholder="https://..." maxlength="500" style="min-width:220px;flex:1;">
+                        <button class="btn btn-primary" type="button" id="btnSalvarFavWeb" onclick="adicionarFavWeb()">Adicionar</button>
+                        <button class="btn btn-secondary" type="button" id="btnCancelarFavWeb" style="display:none;" onclick="limparFormFavWeb()">Cancelar</button>
+                    </div>
+                    <div class="fav-web-grid" id="gridFavWeb"></div>
+                </div>
+
+                <div class="card" style="margin-top:16px;">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Aplicações e scripts favoritos</div>
+                            <div class="card-subtitle">Itens marcados com ⭐ neste navegador</div>
+                        </div>
+                    </div>
+                    <div class="scripts-grid" id="gridFavoritos"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+<!-- MODAL SCRIPT -->
+<div class="modal-overlay" id="scriptModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="tituloModal">Novo Script</div>
+            <button class="close-modal" onclick="fecharModal()">×</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Emoji</label>
+            <input class="form-control" id="inputEmoji" style="width:100%" maxlength="8" value="📜">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Título *</label>
+            <input class="form-control" id="inputTitulo" style="width:100%" placeholder="Ex.: Saudação Inicial">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-control" id="inputTag" style="width:100%">
+                <option value="Geral">Geral</option>
+                <option value="Saudacao">Saudação</option>
+                <option value="Tecnico">Técnico</option>
+                <option value="Encerramento">Encerramento</option>
+                <option value="Problema">Problema</option>
+                <option value="Resolucao">Resolução</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Texto *</label>
+            <textarea class="form-control" id="inputTexto" placeholder="Digite o conteúdo do script..."></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarScript()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   SCRIPTS DO MODELO DE DIÁLOGO
+===================================================== */
+const SCRIPTS_MODELO_DIALOGO = [{"id": "mdl_1_1", "emoji": "🎙️", "titulo": "1.1 Inicialização via Chat (Assistente Petrobras)", "tag": "1. Inicialização", "ordem": "1.1", "texto": "[saudação], Sr. (a) [user_name], me chamo [agent_name], espero que esteja tudo bem! Assumi seu atendimento, em que posso te ajudar?", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_1b", "emoji": "🏢", "titulo": "1.1.2 Sondagem usuário COI", "tag": "1. Inicialização", "ordem": "1.1.2", "texto": "O senhor(a) fala de dentro de um Centro de Operações Integradas?", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_2", "emoji": "💬", "titulo": "1.2 Inicialização via WhatsApp", "tag": "1. Inicialização", "ordem": "1.2", "texto": "[saudação], Sr. (a) [user_name], me chamo [agent_name], espero que esteja tudo bem! Assumi seu atendimento, em que posso te ajudar?\nLembrando, suas mensagens de áudios não chegarão até mim. 😉", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_1_3", "emoji": "🔄", "titulo": "1.3 Retorno do Fluxo de Ausência", "tag": "1. Inicialização", "ordem": "1.3", "texto": "[saudação], Sr. (a) [user_name]! Vou prosseguir com o seu atendimento.", "categoria": "1. Inicialização", "sistema": true, "ativo": true}, {"id": "mdl_2", "emoji": "🖥️", "titulo": "2. Captura remota de equipamentos", "tag": "2. Captura", "ordem": "2", "texto": "Posso acessar seu micro para verificar? ou Para melhor te atender, é necessário capturar o micro, podemos continuar? ou Obrigada por aguardar! Posso capturar seu micro para verificar?\n\nPor favor, acesse o link: https://suportetic.petrobras.com.br/ através do navegador do seu notebook ou microcomputador.", "categoria": "2. Captura", "sistema": true, "ativo": true}, {"id": "mdl_2_1", "emoji": "🔐", "titulo": "2.1 Elevação de captura", "tag": "2. Captura", "ordem": "2.1", "texto": "Para que eu possa ajudar da melhor maneira possível, vou precisar de permissões de administrador. Você verá uma janela pop-up solicitando aprovação. Por favor, clique em Sim para permitir o acesso.", "categoria": "2. Captura", "sistema": true, "ativo": true}, {"id": "mdl_3", "emoji": "📋", "titulo": "3. Informar número do chamado", "tag": "3. Chamado", "ordem": "3", "texto": "Senhor (a), esse atendimento gerou o número de chamado [Nº do chamado] que também será enviado para o seu e-mail.", "categoria": "3. Chamado", "sistema": true, "ativo": true}, {"id": "mdl_4_1_1", "emoji": "↗️", "titulo": "4.1.1 Repasse — User Onshore (introdução)", "tag": "4. Repasse", "ordem": "4.1.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_1_2", "emoji": "📞", "titulo": "4.1.2 Confirmação de dados — Onshore", "tag": "4. Repasse", "ordem": "4.1.2", "texto": "O Sr. (a) poderia informar um contato alternativo que possa acompanhar e autorizar a conclusão do atendimento, caso não esteja disponível no momento, por favor?\nO Sr. (a) possui alguma escala de trabalho?\n- Caso positivo, qual unidade se encontra;\n- Qual melhor horário para atendimento.\n\nAgradeço pelas informações.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_2_1", "emoji": "🛢️", "titulo": "4.2.1 Repasse — User Offshore (introdução)", "tag": "4. Repasse", "ordem": "4.2.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_2_2", "emoji": "🛢️", "titulo": "4.2.2 Confirmação de dados — Offshore", "tag": "4. Repasse", "ordem": "4.2.2", "texto": "Sr.(a) para melhor seguir com o seu atendimento, poderia me passar as seguintes informações?\n- Plataforma em que está lotado;\n- Sala/setor específico;\n- Ramal da sala de rádio;\n- Escala de trabalho;\n- Melhor horário para atendimento;\n- Data de desembarque;\n- Indique outro usuário para contato.\n\nAgradeço pelas informações!", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_3_1", "emoji": "✈️", "titulo": "4.3.1 Repasse — User no exterior (introdução)", "tag": "4. Repasse", "ordem": "4.3.1", "texto": "[Nome do cliente], mesmo após serem realizadas todas as ações possíveis neste nível de atendimento, não foi possível alcançarmos a solução devida para seu chamado. Por este motivo, precisaremos encaminhá-lo para uma equipe especializada.\n\nNão se preocupe, pois a próxima equipe entrará em contato em breve para dar continuidade ao atendimento e nós acompanharemos até a resolução final.\n\nAntes preciso confirmar alguns dos seus dados e horário de expediente.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_3_2", "emoji": "✈️", "titulo": "4.3.2 Confirmação de dados — Exterior", "tag": "4. Repasse", "ordem": "4.3.2", "texto": "O Sr.(a) poderia me informar outro número de contato, país que se encontra e o fuso horário por favor?\n\nAgradeço pelas informações!", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_4_4", "emoji": "🔧", "titulo": "4.4 Atendimento por equipe N3/N4", "tag": "4. Repasse", "ordem": "4.4", "texto": "Sr.(a), informo que o chamado INCXXXXXXXX foi aberto com sucesso e encaminhado para análise da equipe técnica especializada da aplicação, que dará continuidade ao atendimento. Estamos à disposição para acompanhar o processo e ajudar no que for necessário.", "categoria": "4. Repasse", "sistema": true, "ativo": true}, {"id": "mdl_5_1", "emoji": "🧾", "titulo": "5.1 Orientar pelo ServiceNow — Assistente", "tag": "5. ServiceNow", "ordem": "5.1", "texto": "Sr.(a), este atendimento pode ser realizado pela oferta xxxx da TIC.\nSegue o link para registrar o atendimento: xxxx\nDeseja que eu te auxilie no preenchimento da oferta?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_5_2", "emoji": "📱", "titulo": "5.2 Orientar pelo ServiceNow — WhatsApp", "tag": "5. ServiceNow", "ordem": "5.2", "texto": "O senhor (a) está utilizando o WhatsApp pelo celular ou pela web em micro corporativo?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_5_2w", "emoji": "💻", "titulo": "5.2 Via web (micro corporativo)", "tag": "5. ServiceNow", "ordem": "5.2.1", "texto": "Sr.(a), este atendimento pode ser realizado pela oferta xxxx da TIC.\nSegue o link para registrar o atendimento: xxxx\nDeseja que eu te auxilie no preenchimento da oferta?", "categoria": "5. ServiceNow", "sistema": true, "ativo": true}, {"id": "mdl_6_1", "emoji": "⏳", "titulo": "6.1 Espera — Ações de sondagem", "tag": "6. Espera", "ordem": "6.1", "texto": "Um momento enquanto efetuo a checagem.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_2", "emoji": "📖", "titulo": "6.2 Espera — Leitura do histórico (transferência)", "tag": "6. Espera", "ordem": "6.2", "texto": "Senhor(a), identifiquei que houve a transferência do seu atendimento. Peço que aguarde um instante enquanto analiso o histórico da conversa para melhor lhe atender.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_2b", "emoji": "✅", "titulo": "6.2 Escopo da ilha atual após transferência", "tag": "6. Espera", "ordem": "6.2.1", "texto": "Sr.(a), peço desculpas pelo transtorno. Neste momento seguiremos com o seu atendimento e faremos o acompanhamento necessário para resolver sua solicitação.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_3", "emoji": "🔍", "titulo": "6.3 Espera — Busca de procedimentos", "tag": "6. Espera", "ordem": "6.3", "texto": "Estou buscando informações, peço que aguarde um instante. Caso deseje algo, basta me chamar, tudo bem?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_4", "emoji": "⚡", "titulo": "6.4 Espera — Procedimento curto", "tag": "6. Espera", "ordem": "6.4", "texto": "Realizarei o procedimento, caso tenha necessidade basta me chamar, ok?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5", "emoji": "⏱️", "titulo": "6.5 Espera — Procedimento longo ❗", "tag": "6. Espera", "ordem": "6.5", "texto": "[nome do usuário], o procedimento a ser realizado pode demorar cerca X tempo. Podemos continuar?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5p", "emoji": "⏱️", "titulo": "6.5.1 Caso positivo — procedimento longo", "tag": "6. Espera", "ordem": "6.5.1", "texto": "Assim que concluir lhe aviso aqui, mas sinta-se à vontade para me chamar em caso de dúvidas ou precisar de alguma coisa, ok?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_5n", "emoji": "📅", "titulo": "6.5.2 Caso negativo — agendar", "tag": "6. Espera", "ordem": "6.5.2", "texto": "Gostaria de agendar um horário para continuarmos o atendimento?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_6", "emoji": "👋", "titulo": "6.6 User pede atenção durante a espera ❗", "tag": "6. Espera", "ordem": "6.6", "texto": "Sim, pode falar. / Sim, estou à disposição.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_7c", "emoji": "↩️", "titulo": "6.7.1 Retorno — procedimento curto", "tag": "6. Espera", "ordem": "6.7.1", "texto": "Obrigada por ter aguardado.", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_7l", "emoji": "↩️", "titulo": "6.7.2 Retorno — procedimento longo", "tag": "6. Espera", "ordem": "6.7.2", "texto": "Obrigado por ter aguardado, peço desculpas pela demora!", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_6_8", "emoji": "📦", "titulo": "6.8 Autoinstalação pelo Portal da Empresa", "tag": "6. Espera", "ordem": "6.8", "texto": "Senhor(a), a aplicação solicitada está disponível para autoinstalação pelo Portal da Empresa. Essa é uma iniciativa da TIC para tornar o processo mais ágil e eficiente.\n\nVou orientar os passos iniciais e, depois, basta aguardar a instalação automática 😄\n\nMas não se preocupe, caso ocorra alguma falha, por favor, retorne pelos canais oficiais da TIC.\n\nPosso realizar o acesso remoto para iniciar a instalação para o(a) senhor(a)?", "categoria": "6. Espera", "sistema": true, "ativo": true}, {"id": "mdl_7", "emoji": "🎯", "titulo": "7. Retornar ao foco do atendimento", "tag": "7. Foco", "ordem": "7", "texto": "Sr.(a) [nome do usuário], para dar continuidade e concluir o nosso atendimento, preciso que Sr.(a) me auxilie/me informe... (Prossiga com a necessidade).", "categoria": "7. Foco", "sistema": true, "ativo": true}, {"id": "mdl_8", "emoji": "⚠️", "titulo": "8. Indisponibilidade de Serviços TIC (CAOS)", "tag": "8. CAOS", "ordem": "8", "texto": "Sr.(a), este serviço está indisponível no momento. Nossas equipes já estão trabalhando para redução do impacto e normalização o mais breve possível.\n\nPara saber sobre a normalização do serviço basta acessar a página inicial do ServiceNow e consultar as indisponibilidades cadastradas no painel Status de Serviços TIC.", "categoria": "8. CAOS", "sistema": true, "ativo": true}, {"id": "mdl_9_1", "emoji": "↔️", "titulo": "9.1 Transferência — sem transferência anterior", "tag": "9. Transferência", "ordem": "9.1", "texto": "Sr. (a), para essa solicitação a equipe de atendimento adequada é a [nome da ilha] na opção [número da ilha]. Irei direcionar o(a) sr. (a) para a equipe responsável. Aguarde por favor.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_9_2_1", "emoji": "↔️", "titulo": "9.2.1 Transferência anterior — escopo desta ilha", "tag": "9. Transferência", "ordem": "9.2.1", "texto": "Sr.(a), identifiquei que houve algumas transferências anteriormente. Peço desculpas pelo transtorno. Neste momento seguiremos com o seu atendimento por aqui e faremos o acompanhamento necessário para resolver sua solicitação.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_9_2_2", "emoji": "↔️", "titulo": "9.2.2 Transferência anterior — outra ilha", "tag": "9. Transferência", "ordem": "9.2.2", "texto": "Sr.(a), entendo que já houve algumas transferências e peço desculpas pelo transtorno. Realizamos uma análise interna e confirmamos que a equipe responsável para resolver sua solicitação é [nome da ilha], na opção [número da ilha]. Irei direcioná-lo(a), garantindo que seu atendimento seja concluído da melhor forma. Aguarde um momento, por favor.", "categoria": "9. Transferência", "sistema": true, "ativo": true}, {"id": "mdl_10", "emoji": "🖥️", "titulo": "10. Micro terceirizado — problema de hardware", "tag": "10. Terceirizado", "ordem": "10", "texto": "Sr. (a), para problemas de hardware a TIC da Petrobras não consegue efetuar a correção, por se tratar de um equipamento terceirizado. Nesses casos, é necessário que o senhor acione a TIC da empresa do senhor(a), para que eles possam analisar o equipamento. Caso a TIC da sua empresa precise, poderá entrar em contato com a TIC Petrobras.", "categoria": "10. Terceirizado", "sistema": true, "ativo": true}, {"id": "mdl_11", "emoji": "🔑", "titulo": "11. Logado com chave de terceiros", "tag": "11. Chave terceiros", "ordem": "11", "texto": "Senhor(a), notei que o equipamento está logado com a chave de terceiros. Por motivos de segurança da informação, não podemos prosseguir com o atendimento enquanto o acesso estiver nessa condição.\n\nPedimos que o login seja feito com sua própria chave, no seu perfil. Assim que o acesso estiver regularizado, poderemos dar continuidade normalmente.\n\nCaso o problema esteja relacionado ao perfil do usuário xxx, é necessário que ele mesmo entre em contato pelos nossos canais de atendimento.", "categoria": "11. Chave terceiros", "sistema": true, "ativo": true}, {"id": "mdl_12", "emoji": "🕐", "titulo": "12. Transferência por fim de turno ❗", "tag": "12. Fim de turno", "ordem": "12", "texto": "Sr.(a) estou no fim de turno, para prosseguir com o seu atendimento será necessária a transferência da sua interação para outro atendente. Não se preocupe, pois, irei repassar as informações e a captura do seu micro. Peço que aguarde um momento, por favor.", "categoria": "12. Fim de turno", "sistema": true, "ativo": true}, {"id": "mdl_13_1", "emoji": "🏢", "titulo": "13.1 Transferência para BackOffice — pergunta", "tag": "13. BackOffice", "ordem": "13.1", "texto": "Senhor(a) xxxx, por se tratar de uma ação demorada, disponibilizamos uma equipe especializada em atendimentos longos para prosseguir. A comunicação com a equipe continuará através do Assistente Petrobras durante todo processo até a conclusão. O senhor(a) aceita que eu encaminhe o atendimento?", "categoria": "13. BackOffice", "sistema": true, "ativo": true}, {"id": "mdl_13_2", "emoji": "🏢", "titulo": "13.2 Transferência para BackOffice — confirmação", "tag": "13. BackOffice", "ordem": "13.2", "texto": "O analista xxx prosseguirá com o atendimento e com a captura de tela.\nAo final o senhor (a) receberá uma pesquisa de satisfação deste atendimento, sua opinião é muito importante para a TIC.", "categoria": "13. BackOffice", "sistema": true, "ativo": true}, {"id": "mdl_14", "emoji": "🏭", "titulo": "14. Anotação — transferência usuário COI", "tag": "14. COI", "ordem": "14", "texto": "Bom dia/tarde/noite. Usuário de COI (Centro de Operações Integradas) precisando de suporte. Reforçamos que este tipo de usuário deve ser atendido em oferta específica do COI.", "categoria": "14. COI", "sistema": true, "ativo": true}, {"id": "mdl_15", "emoji": "🌐", "titulo": "15. Transferência para analista bilíngue (PT)", "tag": "15. Idiomas", "ordem": "15", "texto": "Bom dia / Boa tarde / Boa noite, [Identificação do usuário]! Espero que esteja tudo bem!\nPeço que aguarde um momento enquanto transfiro essa interação para que um analista bilíngue possa prosseguir com o atendimento.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_1", "emoji": "🇬🇧", "titulo": "15.1 Inglês — Todas as ilhas", "tag": "15. Idiomas", "ordem": "15.1", "texto": "Good morning / Good afternoon / Good evening, [Identificação do usuário]! I hope everything is well!\nPlease wait a moment while I transfer this interaction so that a bilingual analyst can continue assisting you.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_2", "emoji": "🇪🇸", "titulo": "15.2 Espanhol — Todas as ilhas", "tag": "15. Idiomas", "ordem": "15.2", "texto": "Buenos días / Buenas tardes / Buenas noches, [Identificación del usuario]! ¡Espero que todo esté bien!\nLe pido que espere un momento hasta que transfiera esta interacción para que un analista bilingüe pueda continuar con su atención.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3en", "emoji": "🇬🇧", "titulo": "15.3.1 Inglês — fora do escopo do SD", "tag": "15. Idiomas", "ordem": "15.3.1", "texto": "Sir/Madam, the team responsible for handling your request does not offer bilingual support. However, rest assured that I will open a ticket with all the necessary information and forward it to the specialized department. Please hold on for a moment.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3enb", "emoji": "🇬🇧", "titulo": "15.3.1 Inglês — após abrir chamado", "tag": "15. Idiomas", "ordem": "15.3.1b", "texto": "Sir/Madam, the ticket xxxx has been opened and forwarded to the specialized team. You will be contacted shortly so that they can proceed with the support. Is there anything else I can assist you with?", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3es", "emoji": "🇪🇸", "titulo": "15.3.2 Espanhol — fora do escopo do SD", "tag": "15. Idiomas", "ordem": "15.3.2", "texto": "Sr.(a), el equipo de servicio específico para su demanda no cuenta con un canal de atención bilingüe, pero no se preocupe, abriré el ticket con la información necesaria y lo dirigiré al equipo especializado. Por favor espera un momento.", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_15_3esb", "emoji": "🇪🇸", "titulo": "15.3.2 Espanhol — após abrir chamado", "tag": "15. Idiomas", "ordem": "15.3.2b", "texto": "Sr.(a), se abrió el ticket xxxx y se remitió al equipo especializado. Pronto nos pondremos en contacto con usted para que pueda continuar con el servicio. ¿Hay algo más en lo que pueda ayudar?", "categoria": "15. Idiomas", "sistema": true, "ativo": true}, {"id": "mdl_16", "emoji": "⭐", "titulo": "16. Abertura de TRAMA de Elogio", "tag": "16. Elogio", "ordem": "16", "texto": "Gostaria de formalizar o elogio?", "categoria": "16. Elogio", "sistema": true, "ativo": true}, {"id": "mdl_17", "emoji": "🏁", "titulo": "17. Finalização — pergunta final", "tag": "17. Finalização", "ordem": "17", "texto": "Algo mais em que posso ajudar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2", "emoji": "📸", "titulo": "17.2 Finalização da captura de tela", "tag": "17. Finalização", "ordem": "17.2", "texto": "Encerrei a captura do equipamento, poderia confirmar por favor?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2_1", "emoji": "⭐", "titulo": "17.2.1 Pesquisa de satisfação (Assistente)", "tag": "17. Finalização", "ordem": "17.2.1", "texto": "Agora vou direcionar você para uma rápida pesquisa de satisfação sobre o meu atendimento, a mesma ficará disponível por 1h.\n\nSua participação é muito importante, pois nos ajuda a continuar evoluindo e entender como foi a sua experiência durante o atendimento.\n\nEspero contar com a sua participação.\nAté breve!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_2_2", "emoji": "👋", "titulo": "17.2.1.2 Exceção — sem pesquisa", "tag": "17. Finalização", "ordem": "17.2.2", "texto": "A TIC agradece o contato, tenha um bom dia, boa tarde ou boa noite.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_3", "emoji": "🔑", "titulo": "17.3 Finalização — chave de serviço", "tag": "17. Finalização", "ordem": "17.3", "texto": "[nome do usuário], você está logado com sua chave de 4 dígitos?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_3n", "emoji": "🔑", "titulo": "17.3.1 Chave de serviço — caso negativo", "tag": "17. Finalização", "ordem": "17.3.1", "texto": "Para prosseguir com o atendimento, precisamos que o acesso seja realizado através da chave de 4 dígitos e seja realizado novo contato através de um de nossos canais de atendimento.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4", "emoji": "⏸️", "titulo": "17.4 Sem retorno do user — tentativa", "tag": "17. Finalização", "ordem": "17.4", "texto": "[nome do usuário], podemos continuar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4a", "emoji": "⏸️", "titulo": "17.4.1.1 Sem retorno — com chamado aberto", "tag": "17. Finalização", "ordem": "17.4.1", "texto": "Por falta de retorno sua sessão será pausada, mas não se preocupe, pois o seu chamado [nº do chamado] ficará pendente e poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4b", "emoji": "⏸️", "titulo": "17.4.1.2 Sem retorno — sem chamado", "tag": "17. Finalização", "ordem": "17.4.2", "texto": "Por falta de retorno sua sessão será pausada, mas não se preocupe, poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4va", "emoji": "⏸️", "titulo": "17.4.2 VA — com chamado (finaliza sessão)", "tag": "17. Finalização", "ordem": "17.4.2a", "texto": "Por falta de retorno sua sessão será finalizada. Seu chamado [nº do chamado] ficará pendente e poderá prosseguir quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_4vb", "emoji": "⏸️", "titulo": "17.4.2 VA — sem chamado (finaliza sessão)", "tag": "17. Finalização", "ordem": "17.4.2b", "texto": "Por falta de retorno sua sessão será finalizada. O(a) sr.(a) poderá retornar o contato quando estiver disponível. 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_5", "emoji": "🔌", "titulo": "17.5 Falha do Genesys", "tag": "17. Finalização", "ordem": "17.5", "texto": "Sr.(a), parece que a conexão do chat caiu, deseja continuar o atendimento por aqui?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_1", "emoji": "👋", "titulo": "17.6.1 Desistência antes de iniciar", "tag": "17. Finalização", "ordem": "17.6.1", "texto": "Tudo bem. A TIC agradece o contato. Desejo um bom dia/ boa tarde/ boa noite.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_2", "emoji": "❓", "titulo": "17.6.2 Desistência com chamado — pergunta", "tag": "17. Finalização", "ordem": "17.6.2", "texto": "Senhor, neste caso, deseja deixar o chamado pendente ou podemos cancelar o chamado e o senhor entra em contato conosco novamente quando tiver disponibilidade?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_6_2c", "emoji": "❌", "titulo": "17.6.2.2 Cancelamento a pedido do user", "tag": "17. Finalização", "ordem": "17.6.2c", "texto": "Ok. Se precisar de ajuda novamente, não hesite em entrar em contato com a TIC. Estamos aqui para ajudar!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7", "emoji": "🚫", "titulo": "17.7.1 Conversas ofensivas ou assédio", "tag": "17. Finalização", "ordem": "17.7.1", "texto": "Sr.(a) [nome do usuário], para podermos efetivamente resolver suas questões junto à TIC, é fundamental mantermos um diálogo construtivo e focado na solução. Se você puder colaborar nesse sentido, estarei à disposição para auxiliá-lo da melhor forma possível.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7e", "emoji": "🚫", "titulo": "17.7.1.2 Encerrar por falta de foco", "tag": "17. Finalização", "ordem": "17.7.1e", "texto": "Senhor(a), por falta de foco na resolução do seu problema estou encerrando nossa interação.\nTenha um [bom dia/boa tarde/boa noite]!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_7l", "emoji": "🔒", "titulo": "17.7.2 Localização física da empresa", "tag": "17. Finalização", "ordem": "17.7.2", "texto": "Por questões de Segurança Empresarial não podemos informá-lo.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8", "emoji": "📅", "titulo": "17.8 Retorno posterior — agendar", "tag": "17. Finalização", "ordem": "17.8", "texto": "Como desejar, [nome do usuário]! Mas para assegurarmos o melhor atendimento, é importante agendarmos um horário para nosso contato. Por gentileza, nos informe qual seu horário de expediente para que possamos retornar para você.", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8b", "emoji": "📋", "titulo": "17.8.1 Após confirmação do agendamento", "tag": "17. Finalização", "ordem": "17.8.1", "texto": "Seu registro [nº do registro] está aberto. Para sua comodidade, sugiro anotar o número desse chamado para facilitar a retomada do atendimento.\n\nExiste algo mais em que eu possa ajudar?", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_8c", "emoji": "🏁", "titulo": "17.8.3 Encerramento após agendamento", "tag": "17. Finalização", "ordem": "17.8.3", "texto": "Agradeço seu tempo. Tenha um ótimo dia! 😊", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_17_9", "emoji": "🏢", "titulo": "17.9 Finalização exclusiva BKO", "tag": "17. Finalização", "ordem": "17.9", "texto": "Pronto! Sua solicitação foi resolvida com sucesso. Caso precise de algo mais, estamos à disposição!\n\nAo final, você poderá receber uma pesquisa sobre sua experiência. Ela é baseada no atendimento prestado neste momento, e seu feedback nos ajuda a continuar melhorando!\n\nAgradecemos o contato e desejamos um ótimo dia!", "categoria": "17. Finalização", "sistema": true, "ativo": true}, {"id": "mdl_18_1", "emoji": "❌", "titulo": "18.1 Fora do escopo TIC", "tag": "18. Negativa atendimento", "ordem": "18.1", "texto": "[nome do usuário], esta solicitação não faz parte do escopo de atendimento da TIC.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_1b", "emoji": "❌", "titulo": "18.1.2 Fora do escopo Petrobras", "tag": "18. Negativa atendimento", "ordem": "18.1.2", "texto": "[nome do usuário], a TIC não presta suporte para este tipo de solicitação.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2", "emoji": "📘", "titulo": "18.2 Orientação de usabilidade (SINPEP)", "tag": "18. Negativa atendimento", "ordem": "18.2", "texto": "Sr.(a) [nome do usuário], peço desculpas pelo transtorno, mas, conforme o Padrão SINPEP PE-1PBR-0176, a TIC não presta suporte na usabilidade das aplicações e não dispomos de artigos com este tipo de orientação.\n\nNossa equipe está comprometida em oferecer suporte técnico focado em instalações, desinstalações e correção de falhas específicas. Caso você esteja precisando de algum destes atendimentos, teremos o prazer de ajudá-lo(a).\n\nLamentamos não poder fornecer orientações de usabilidade, mas estamos à disposição para ajudar no que for possível dentro do nosso escopo de atendimento. Contamos com a sua compreensão.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2b", "emoji": "📘", "titulo": "18.2.1 Usabilidade com artigo na KB", "tag": "18. Negativa atendimento", "ordem": "18.2.1", "texto": "Sr.(a), nossa equipe está comprometida em oferecer suporte técnico focado em instalações, desinstalações e correção de falhas específicas, mas não orientamos quanto ao seu uso. Entretanto, encontramos o procedimento [link do procedimento] na base de conhecimento que pode lhe auxiliar. Outros procedimentos também podem estar disponíveis e você pode procurá-los no campo de pesquisa do ServiceNow.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_2c", "emoji": "📘", "titulo": "18.2 Aplicações de Negócio — usabilidade", "tag": "18. Negativa atendimento", "ordem": "18.2c", "texto": "Sr.(a), nossa equipe está à disposição para oferecer suporte técnico voltado a instalações, desinstalações e correções de falhas específicas. No momento, não realizamos orientações detalhadas sobre o uso da aplicação.\n\nNo entanto, identificamos que o procedimento [link do procedimento] está disponível em nossa base de conhecimento e pode auxiliá-lo. Além disso, outros materiais de apoio podem estar disponíveis e podem ser localizados por meio do campo de pesquisa do ServiceNow.\n\nPermanecemos à disposição para qualquer necessidade relacionada ao suporte técnico.", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_3", "emoji": "☎️", "titulo": "18.3 Interesse em atendimento por telefone", "tag": "18. Negativa atendimento", "ordem": "18.3", "texto": "Sr.(a) [nome do usuário], o meu atendimento é exclusivo para o canal chat, por isso não consigo redirecionar sua solicitação para outro canal. Mas estou aqui para te auxiliar da melhor forma possível! 😉", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_18_3b", "emoji": "☎️", "titulo": "18.3.1 Insistência — agendar telefone", "tag": "18. Negativa atendimento", "ordem": "18.3.1", "texto": "Gostaria de agendar um horário para que um outro técnico continue o atendimento através de um contato telefônico?", "categoria": "18. Negativa atendimento", "sistema": true, "ativo": true}, {"id": "mdl_19_1", "emoji": "💬", "titulo": "19.1 Negativa de conversa pelo Bomgar", "tag": "19. Negativa conversa", "ordem": "19.1", "texto": "Sr.(a), por favor, por questão de fluxo devemos manter nosso diálogo apenas através do teams no Assistente Petrobras.", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_19_1b", "emoji": "🔄", "titulo": "19.1.1 Aguardar reconexão do Chat", "tag": "19. Negativa conversa", "ordem": "19.1.1", "texto": "Vamos aguardar a reconexão, por gentileza.", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_19_2", "emoji": "💼", "titulo": "19.2 Contato via Teams para novo atendimento", "tag": "19. Negativa conversa", "ordem": "19.2", "texto": "Bom dia/Boa tarde/Boa noite, [nome do usuário]! Neste momento estou realizando outro atendimento. Se desejar, pode deixar aqui um dia e horário que agendarei seu atendimento.\n\nEm caso de urgência, peço que entre em contato por um dos nossos canais de atendimento:\n• ServiceNow: Homepage - Catálogo de Serviços Petrobras\n• Assistente Petrobras localizado na barra lateral do seu Teams\n• Pelo 0800 881 0881\n• WhatsApp: 21 3224-0881\n\nAgradeço a sua compreensão, tenha um ótimo dia!", "categoria": "19. Negativa conversa", "sistema": true, "ativo": true}, {"id": "mdl_20_1", "emoji": "🔁", "titulo": "20.1 Cancelamento por duplicidade", "tag": "20. Cancelamento", "ordem": "20.1", "texto": "Senhor(a), durante a análise da sua solicitação, identifiquei que já existe um chamado registrado para o mesmo atendimento. Para evitar duplicidade de tratativas e possíveis divergências no acompanhamento, o chamado XXX será cancelado e seguiremos com o atendimento pelo chamado já existente xxx.", "categoria": "20. Cancelamento", "sistema": true, "ativo": true}, {"id": "mdl_20_2", "emoji": "🔁", "titulo": "20.2 Cancelamento por oferta incorreta", "tag": "20. Cancelamento", "ordem": "20.2", "texto": "Senhor(a), após uma sondagem mais detalhada, identifiquei que sua solicitação se refere a outra categorização de serviço. Portanto, o chamado XXX será cancelado, mas não se preocupe, realizei a abertura do novo chamado de número XXX onde será possível acompanhar as atualizações.", "categoria": "20. Cancelamento", "sistema": true, "ativo": true}, {"id": "mdl_21", "emoji": "🧭", "titulo": "21. Explicar processo quando não há solução imediata", "tag": "21. Processo", "ordem": "21", "texto": "Nesse caso, o processo funciona da seguinte forma: [explicar brevemente os próximos passos]. A tratativa depende de [explicar se depende de outra área/aprovação/equipe, etc.], mas fique tranquilo(a), caso surja qualquer dúvida ou dificuldade, você pode retornar o contato que a TIC te ajudará no que for possível.", "categoria": "21. Processo", "sistema": true, "ativo": true}];
+
+let APLICACOES = [];
+let scripts = [];
+let editandoId = null;
+let currentUser = null;
+
+let favoritosApps = {};
+let favoritosWeb = [];
+let favoritosScripts = {};
+let chamados = [];
+
+function storageKey(base) {
+    var u = "";
+    if (typeof currentUser === "object" && currentUser) {
+        u = String(currentUser.usuario || currentUser.username || "").trim().toLowerCase();
+    }
+    return u ? (base + "::" + u) : base;
+}
+
+function carregarDadosLocaisDoUsuario() {
+    // Chamados e favoritos isolados por conta logada
+    try {
+        favoritosApps = JSON.parse(localStorage.getItem(storageKey("favApps")) || "{}");
+        if (!favoritosApps || typeof favoritosApps !== "object") favoritosApps = {};
+    } catch (e) { favoritosApps = {}; }
+
+    try {
+        favoritosWeb = JSON.parse(localStorage.getItem(storageKey("favWeb")) || "[]");
+        if (!Array.isArray(favoritosWeb)) favoritosWeb = [];
+    } catch (e) { favoritosWeb = []; }
+
+    try {
+        favoritosScripts = JSON.parse(localStorage.getItem(storageKey("favScripts")) || "{}");
+        if (!favoritosScripts || typeof favoritosScripts !== "object") favoritosScripts = {};
+    } catch (e) { favoritosScripts = {}; }
+
+    try {
+        chamados = JSON.parse(localStorage.getItem(storageKey("chamadosDia")) || "[]");
+        if (!Array.isArray(chamados)) chamados = [];
+    } catch (e) { chamados = []; }
+}
+
+/* =====================================================
+   INIT
+===================================================== */
+document.addEventListener("DOMContentLoaded", async function () {
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    var ok = await carregarUsuario();
+    if (!ok) return;
+
+    // Carrega chamados/favoritos SOMENTE da conta logada
+    carregarDadosLocaisDoUsuario();
+
+    await Promise.all([carregarApps(), carregarScripts()]);
+    renderizarChamados();
+    if (typeof renderFavWeb === "function") renderFavWeb();
+    if (typeof renderDashboardFavWeb === "function") renderDashboardFavWeb();
+
+    // Abre aba pelo hash OU pela rota /chamado
+    if (deveAbrirChamadosPorRota()) {
+        abrirAba("chamados", null);
+    } else {
+        abrirAbaPorHash();
+    }
+    window.addEventListener("hashchange", abrirAbaPorHash);
+});
+
+function deveAbrirChamadosPorRota() {
+    var path = (window.location.pathname || "").replace(/\/+$/, "").toLowerCase();
+    return path === "/chamado" || path === "/chamados";
+}
+
+function abrirAbaPorHash() {
+    var hash = (window.location.hash || "").replace("#", "").toLowerCase().trim();
+    var validas = ["apps", "busca", "scripts", "chamados", "dashboard", "favoritos"];
+    if (!hash || validas.indexOf(hash) === -1) {
+        if (typeof destacarMenu === "function") destacarMenu("apps");
+        return;
+    }
+    if (hash === "busca") hash = "apps";
+    abrirAba(hash, null);
+}
+
+function destacarMenu(hash) {
+    var links = document.querySelectorAll(".menu a");
+    links.forEach(function (a) { a.classList.remove("active"); });
+    var idMap = {
+        apps: "menuApps",
+        busca: "menuApps",
+        "": "menuApps",
+        chamados: "menuChamados",
+        scripts: "menuScripts",
+        favoritos: "menuFavoritos"
+    };
+    var el = document.getElementById(idMap[hash] || "menuApps");
+    if (el) el.classList.add("active");
+}
+
+
+/* =====================================================
+   API
+===================================================== */
+async function apiFetch(url, options) {
+    options = options || {};
+    try {
+        var response = await fetch(url, {
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            method: options.method || "GET",
+            body: options.body || undefined
+        });
+
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return null;
+        }
+
+        var data = await response.json().catch(function () { return null; });
+
+        if (!response.ok) {
+            var msg = (data && data.erro) || ("HTTP " + response.status);
+            throw new Error(msg);
+        }
+        return data;
+    } catch (error) {
+        console.error("API:", url, error);
+        showToast(error.message || "Erro de comunicação.", "error");
+        return null;
+    }
+}
+
+/* =====================================================
+   USUÁRIO
+===================================================== */
+async function carregarUsuario() {
+    try {
+        var response = await fetch("/api/me", {
+            credentials: "same-origin",
+            headers: { "Accept": "application/json" }
+        });
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return false;
+        }
+        if (!response.ok) {
+            currentUser = { usuario: "usuario", nome: "Usuário", permissao: "usuario" };
+        } else {
+            var data = await response.json();
+            var u = (data && data.usuario && typeof data.usuario === "object")
+                ? data.usuario
+                : (data && data.dados) ? data.dados : data;
+            currentUser = {
+                usuario: (u && (u.usuario || u.username)) || "usuario",
+                nome: (u && (u.nome || u.name)) || "Usuário",
+                permissao: (u && (u.permissao || u.role)) || "usuario"
+            };
+        }
+        document.getElementById("sidebarUserName").textContent =
+            currentUser.nome || currentUser.usuario;
+        document.getElementById("sidebarUserRole").textContent =
+            currentUser.permissao === "admin" ? "Administrador" : "Atendimento N1";
+        if (currentUser.permissao === "admin") {
+            var la = document.getElementById("linkAdmin");
+            if (la) la.style.display = "";
+            var ma = document.getElementById("menuAuditoria");
+            if (ma) ma.style.display = "";
+        }
+        return true;
+    } catch (e) {
+        console.error(e);
+        return true;
+    }
+}
+
+function updateClock() {
+    document.getElementById("clock").textContent =
+        new Date().toLocaleTimeString("pt-BR", {
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+}
+
+/* =====================================================
+   APLICAÇÕES
+===================================================== */
+async function carregarApps() {
+    var data = await apiFetch("/api/apps");
+    if (!data) { APLICACOES = []; return; }
+    if (Array.isArray(data)) APLICACOES = data;
+    else if (Array.isArray(data.dados)) APLICACOES = data.dados;
+    else if (Array.isArray(data.aplicacoes)) APLICACOES = data.aplicacoes;
+    else APLICACOES = [];
+    document.getElementById("totalAppsLabel").textContent =
+        APLICACOES.length + " aplicações";
+}
+
+function filtrarApps() {
+    var termo = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+    var tbody = document.getElementById("corpoApps");
+    var resultCount = document.getElementById("resultCount");
+
+    if (!termo) {
+        resultCount.textContent = "Digite um termo para buscar.";
+        tbody.innerHTML = "<tr><td colspan=\"7\"><div class=\"empty\">Digite acima para buscar...</div></td></tr>";
+        return;
+    }
+
+    var filtrados = APLICACOES.filter(function (a) {
+        return (
+            String(a.codigo || "").toLowerCase().indexOf(termo) !== -1 ||
+            String(a.sigla || "").toLowerCase().indexOf(termo) !== -1 ||
+            String(a.nome || "").toLowerCase().indexOf(termo) !== -1 ||
+            String(a.mesa || "").toLowerCase().indexOf(termo) !== -1
+        );
+    });
+
+    resultCount.textContent = filtrados.length + " aplicação(ões) para \"" + termo + "\"";
+
+    if (!filtrados.length) {
+        tbody.innerHTML = "<tr><td colspan=\"7\"><div class=\"empty\">Nenhuma aplicação encontrada.</div></td></tr>";
+        return;
+    }
+
+    tbody.innerHTML = filtrados.map(function (a) {
+        var codigo = a.codigo || "";
+        var isFav = !!favoritosApps[codigo];
+        var siglaKb = escapeAttr(a.sigla || "");
+        var nomeKb = escapeAttr(a.nome || "");
+        return (
+            "<tr>" +
+            "<td><button class=\"fav-btn\" style=\"position:static\" onclick=\"toggleFavApp('" + escapeAttr(codigo) + "')\">" +
+            (isFav ? "⭐" : "☆") + "</button></td>" +
+            "<td>" + escapeHtml(codigo || "—") + "</td>" +
+            "<td><strong>" + escapeHtml(a.sigla || "—") + "</strong></td>" +
+            "<td>" + escapeHtml(a.nome || "—") + "</td>" +
+            "<td>" + escapeHtml(a.mesa || "—") + "</td>" +
+            "<td><span class=\"badge badge-ok\">" + escapeHtml(a.status || "Ativo") + "</span></td>" +
+            "<td style=\"white-space:nowrap\">" +
+            "<div style=\"display:flex;gap:6px;flex-wrap:wrap\">" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirConhecimento('" + siglaKb + "')\"" +
+            (siglaKb ? "" : " disabled") + ">📚 Sigla</button>" +
+            "<button class=\"btn btn-primary btn-sm\" onclick=\"abrirConhecimento('" + nomeKb + "')\"" +
+            (nomeKb ? "" : " disabled") + ">📚 Nome</button>" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirPsQRapida('" + siglaKb + "')\"" +
+            (siglaKb ? "" : " disabled") + ">PsQ-Rapida Sigla</button>" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirPsQRapida('" + nomeKb + "')\"" +
+            (nomeKb ? "" : " disabled") + ">PsQ-Rapida Nome</button>" +
+            "</div></td></tr>"
+        );
+    }).join("");
+}
+
+function abrirConhecimento(valor) {
+    var termo = (valor || "").trim();
+    if (!termo) {
+        showToast("Sem valor para pesquisar.", "error");
+        return;
+    }
+    // Busca original ServiceNow (portal CS)
+    var url = "https://petrobras.service-now.com/cs?id=search&spa=1&q=" +
+        encodeURIComponent(termo) + "&search_go=1";
+    window.open(url, "_blank");
+}
+
+function abrirPsQRapida(valor) {
+    var termo = (valor || "").trim();
+
+    // Sem termo: abre a Knowledge
+    if (!termo) {
+        window.open(
+            "https://petrobras.service-now.com/now/nav/ui/classic/params/target/%24knowledge.do",
+            "_blank"
+        );
+        return;
+    }
+
+    // Formato real da pesquisa na Knowledge (confirmado na instância Petrobras)
+    // Ex.: /$knowledge.do?sysparm_search=SAMC&query=samc&sysparm_type_filter=all&sysparm_order=relevancy
+    var q = encodeURIComponent(termo);
+    var url =
+        "https://petrobras.service-now.com/$knowledge.do?" +
+        "sysparm_search=" + q +
+        "&query=" + q +
+        "&sysparm_type_filter=all" +
+        "&sysparm_order=relevancy";
+
+    window.open(url, "_blank");
+}
+
+function abrirPsQRapidaBusca() {
+    var el = document.getElementById("searchInput");
+    var termo = el ? (el.value || "").trim() : "";
+    abrirPsQRapida(termo);
+}
+
+
+function toggleFavApp(codigo) {
+    favoritosApps[codigo] = !favoritosApps[codigo];
+    localStorage.setItem(storageKey("favApps"), JSON.stringify(favoritosApps));
+    filtrarApps();
+    showToast(favoritosApps[codigo] ? "App favoritado." : "Removido dos favoritos.", "success");
+}
+
+/* =====================================================
+   SCRIPTS
+===================================================== */
+async function carregarScripts() {
+    var modelo = Array.isArray(SCRIPTS_MODELO_DIALOGO) ? SCRIPTS_MODELO_DIALOGO : [];
+
+    var data = await apiFetch("/api/scripts");
+    var daApi = [];
+    if (data) {
+        if (Array.isArray(data)) daApi = data;
+        else if (Array.isArray(data.dados)) daApi = data.dados;
+        else if (Array.isArray(data.scripts)) daApi = data.scripts;
+    }
+
+    daApi = daApi.map(function (s) {
+        return {
+            id: s.id,
+            emoji: s.emoji || "📜",
+            titulo: s.titulo || "",
+            tag: s.tag || s.categoria || "Geral",
+            categoria: s.categoria || s.tag || "Geral",
+            texto: s.texto || "",
+            ativo: s.ativo !== false,
+            sistema: false
+        };
+    }).filter(function (s) { return s.ativo !== false; });
+
+    scripts = modelo.concat(daApi);
+    renderizarScripts();
+}
+
+function popularFiltroScripts() {
+    var select = document.getElementById("scriptTagFilter");
+    if (!select) return;
+    var atual = select.value;
+    var tags = [];
+    scripts.forEach(function (s) {
+        var t = s.tag || s.categoria || "";
+        if (t && tags.indexOf(t) === -1) tags.push(t);
+    });
+    tags.sort();
+    select.innerHTML = "<option value=\"\">Todas as seções do Modelo de Diálogo</option>";
+    tags.forEach(function (t) {
+        var opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        if (t === atual) opt.selected = true;
+        select.appendChild(opt);
+    });
+}
+
+function renderizarScripts() {
+    popularFiltroScripts();
+    var grid = document.getElementById("gridScripts");
+    var search = (document.getElementById("scriptSearch").value || "").toLowerCase();
+    var tag = document.getElementById("scriptTagFilter").value;
+
+    var lista = scripts.filter(function (s) {
+        if (s.ativo === false) return false;
+        if (tag && (s.tag || s.categoria) !== tag) return false;
+        if (!search) return true;
+        var blob = [s.titulo, s.texto, s.tag, s.categoria, s.id].join(" ").toLowerCase();
+        return blob.indexOf(search) !== -1;
+    });
+
+    if (!lista.length) {
+        grid.innerHTML = "<div class=\"empty\">Nenhum script encontrado.</div>";
+        return;
+    }
+
+    grid.innerHTML = lista.map(function (s) {
+        var id = escapeAttr(s.id);
+        var isFav = !!favoritosScripts[s.id];
+        var tagLabel = s.tag || s.categoria || "Geral";
+        var acoes = "";
+        if (!s.sistema) {
+            acoes =
+                "<button class=\"btn btn-primary btn-sm\" onclick=\"abrirModalScript('" + id + "')\">Editar</button>" +
+                "<button class=\"btn btn-danger btn-sm\" onclick=\"excluirScript('" + id + "')\">Desativar</button>";
+        }
+        return (
+            "<div class=\"script-card\">" +
+            "<button class=\"fav-btn\" onclick=\"toggleFavScript('" + id + "')\">" + (isFav ? "⭐" : "☆") + "</button>" +
+            "<div class=\"script-title\">" + escapeHtml(s.emoji || "📜") + " " + escapeHtml(s.titulo || "") + "</div>" +
+            "<div class=\"script-id\">" + escapeHtml(s.id || "") + (s.sistema ? " · modelo diálogo" : "") + "</div>" +
+            "<div class=\"script-category\"><span class=\"badge badge-tag\">" + escapeHtml(tagLabel) + "</span></div>" +
+            "<div class=\"script-text\">" + escapeHtml(s.texto || "") + "</div>" +
+            "<div class=\"script-actions\">" +
+            "<button class=\"btn btn-secondary btn-sm\" onclick=\"copiarScript('" + id + "')\">Copiar</button>" +
+            acoes +
+            "</div></div>"
+        );
+    }).join("");
+}
+
+function toggleFavScript(id) {
+    favoritosScripts[id] = !favoritosScripts[id];
+    localStorage.setItem(storageKey("favScripts"), JSON.stringify(favoritosScripts));
+    renderizarScripts();
+}
+
+function abrirModalScript(id) {
+    editandoId = id || null;
+    if (!editandoId) {
+        document.getElementById("tituloModal").textContent = "Novo Script";
+        document.getElementById("inputEmoji").value = "📜";
+        document.getElementById("inputTitulo").value = "";
+        document.getElementById("inputTag").value = "Geral";
+        document.getElementById("inputTexto").value = "";
+    } else {
+        var s = scripts.find(function (x) { return x.id === editandoId; });
+        if (!s || s.sistema) {
+            showToast("Scripts do modelo de diálogo não podem ser editados aqui.", "error");
+            return;
+        }
+        document.getElementById("tituloModal").textContent = "Editar Script";
+        document.getElementById("inputEmoji").value = s.emoji || "📜";
+        document.getElementById("inputTitulo").value = s.titulo || "";
+        document.getElementById("inputTag").value = s.tag || s.categoria || "Geral";
+        document.getElementById("inputTexto").value = s.texto || "";
+    }
+    document.getElementById("scriptModal").classList.add("show");
+}
+
+function fecharModal() {
+    document.getElementById("scriptModal").classList.remove("show");
+    editandoId = null;
+}
+
+async function salvarScript() {
+    var emoji = document.getElementById("inputEmoji").value.trim() || "📜";
+    var titulo = document.getElementById("inputTitulo").value.trim();
+    var categoria = document.getElementById("inputTag").value || "Geral";
+    var texto = document.getElementById("inputTexto").value.trim();
+
+    if (!titulo || !texto) {
+        showToast("Título e texto são obrigatórios.", "error");
+        return;
+    }
+
+    var url = editandoId
+        ? "/api/scripts/" + encodeURIComponent(editandoId)
+        : "/api/scripts";
+    var method = editandoId ? "PUT" : "POST";
+
+    var data = await apiFetch(url, {
+        method: method,
+        body: JSON.stringify({
+            emoji: emoji,
+            titulo: titulo,
+            categoria: categoria,
+            texto: texto
+        })
+    });
+    if (!data) return;
+
+    fecharModal();
+    await carregarScripts();
+    showToast(editandoId ? "Script atualizado." : "Script criado.", "success");
+}
+
+async function excluirScript(id) {
+    if (!confirm("Deseja desativar este script?")) return;
+    var data = await apiFetch("/api/scripts/" + encodeURIComponent(id), { method: "DELETE" });
+    if (!data) return;
+    await carregarScripts();
+    showToast("Script desativado.", "success");
+}
+
+async function copiarScript(id) {
+    var s = scripts.find(function (x) { return x.id === id; });
+    if (!s) return;
+    try {
+        await navigator.clipboard.writeText(s.texto || "");
+        showToast("Script copiado.", "success");
+    } catch (e) {
+        showToast("Não foi possível copiar.", "error");
+    }
+}
+
+/* =====================================================
+   CHAMADOS DO DIA
+===================================================== */
+function filtrarTipos() {
+    var termo = (document.getElementById("chamadoTipo").value || "").toLowerCase();
+    var box = document.getElementById("tipoSugestoes");
+    if (!termo) {
+        box.classList.remove("show");
+        return;
+    }
+    var tipos = APLICACOES.filter(function (a) {
+        return (
+            String(a.nome || "").toLowerCase().indexOf(termo) !== -1 ||
+            String(a.sigla || "").toLowerCase().indexOf(termo) !== -1
+        );
+    }).map(function (a) {
+        return a.sigla ? (a.sigla + " — " + a.nome) : a.nome;
+    }).filter(function (v, i, arr) {
+        return arr.indexOf(v) === i;
+    }).slice(0, 8);
+
+    if (!tipos.length) {
+        box.classList.remove("show");
+        return;
+    }
+    box.innerHTML = tipos.map(function (t) {
+        return "<div class=\"tipo-item\" onclick=\"selecionarTipo('" +
+            escapeAttr(t) + "')\">" + escapeHtml(t) + "</div>";
+    }).join("");
+    box.classList.add("show");
+}
+
+function selecionarTipo(valor) {
+    document.getElementById("chamadoTipo").value = valor;
+    document.getElementById("tipoSugestoes").classList.remove("show");
+}
+
+function adicionarChamado() {
+    var numero = document.getElementById("chamadoNumero").value.trim();
+    var tipo = document.getElementById("chamadoTipo").value.trim();
+    if (!numero || !tipo) {
+        showToast("Preencha número e tipo do chamado.", "error");
+        return;
+    }
+    chamados.push({
+        id: Date.now(),
+        numero: numero,
+        tipo: tipo,
+        data: new Date().toLocaleTimeString("pt-BR")
+    });
+    localStorage.setItem(storageKey("chamadosDia"), JSON.stringify(chamados));
+    document.getElementById("chamadoNumero").value = "";
+    document.getElementById("chamadoTipo").value = "";
+    document.getElementById("tipoSugestoes").classList.remove("show");
+    renderizarChamados();
+    showToast("Chamado adicionado.", "success");
+}
+
+function renderizarChamados() {
+    var tbody = document.getElementById("corpoChamados");
+    var resumo = document.getElementById("resumoChamados");
+
+    if (!chamados.length) {
+        tbody.innerHTML = "<tr><td colspan=\"4\"><div class=\"empty\">Nenhum chamado registrado neste turno.</div></td></tr>";
+        resumo.style.display = "none";
+        return;
+    }
+
+    tbody.innerHTML = chamados.map(function (c) {
+        return (
+            "<tr>" +
+            "<td><strong>" + escapeHtml(c.numero) + "</strong></td>" +
+            "<td>" + escapeHtml(c.tipo) + "</td>" +
+            "<td>" + escapeHtml(c.data || "") + "</td>" +
+            "<td><button class=\"btn btn-danger btn-sm\" onclick=\"deletarChamado(" + c.id + ")\">Remover</button></td>" +
+            "</tr>"
+        );
+    }).join("");
+
+    var contadores = {};
+    chamados.forEach(function (c) {
+        contadores[c.tipo] = (contadores[c.tipo] || 0) + 1;
+    });
+
+    var detalhe = "";
+    Object.keys(contadores).sort().forEach(function (tipo) {
+        detalhe +=
+            "<div class=\"resumo-item\"><span>" + escapeHtml(tipo) +
+            "</span><strong>" + contadores[tipo] + "</strong></div>";
+    });
+
+    document.getElementById("totalChamados").textContent = String(chamados.length);
+    document.getElementById("detalheChamados").innerHTML = detalhe;
+    resumo.style.display = "block";
+}
+
+function deletarChamado(id) {
+    chamados = chamados.filter(function (c) { return c.id !== id; });
+    localStorage.setItem(storageKey("chamadosDia"), JSON.stringify(chamados));
+    renderizarChamados();
+    showToast("Chamado removido.", "success");
+}
+
+function limparChamados() {
+    if (!confirm("Limpar todos os chamados deste turno?")) return;
+    chamados = [];
+    localStorage.setItem(storageKey("chamadosDia"), JSON.stringify(chamados));
+    renderizarChamados();
+    showToast("Turno limpo.", "success");
+}
+
+function exportarRelatorio() {
+    var contadores = {};
+    chamados.forEach(function (c) {
+        contadores[c.tipo] = (contadores[c.tipo] || 0) + 1;
+    });
+
+    var relatorio = "RELATÓRIO DE ATENDIMENTO - " + new Date().toLocaleDateString("pt-BR") + "\n";
+    relatorio += "====================================\n\n";
+    relatorio += "Total de Chamados: " + chamados.length + "\n\n";
+    relatorio += "Por Tipo:\n";
+    Object.keys(contadores).sort().forEach(function (tipo) {
+        relatorio += "- " + tipo + ": " + contadores[tipo] + "\n";
+    });
+    relatorio += "\nDetalhes:\n";
+    chamados.forEach(function (c) {
+        relatorio += "- " + c.numero + " (" + c.tipo + ") às " + (c.data || "") + "\n";
+    });
+
+    var blob = new Blob([relatorio], { type: "text/plain;charset=utf-8" });
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "relatorio_atendimento_" + new Date().toISOString().split("T")[0] + ".txt";
+    link.click();
+    showToast("Relatório exportado.", "success");
+}
+
+/* =====================================================
+   DASHBOARD / FAVORITOS
+===================================================== */
+
+function renderDashboardFavWeb() {
+    var box = document.getElementById("dashboardFavWeb");
+    if (!box) return;
+    var countEl = document.getElementById("dashboardFavWebCount");
+    if (countEl) {
+        countEl.textContent = favoritosWeb.length === 1 ? "1 link" : (favoritosWeb.length + " links");
+    }
+    if (!favoritosWeb.length) {
+        box.innerHTML = "<div class=\"fav-empty\">Nenhum favorito da web. Cadastre na aba Favoritos.</div>";
+        return;
+    }
+    box.className = "fav-dash-list";
+    box.innerHTML = favoritosWeb.map(function (f) {
+        var letra = (f.nome || "W").trim().charAt(0).toUpperCase();
+        return (
+            "<div class=\"fav-dash-item\" onclick=\"abrirFavWeb(" + f.id + ")\" title=\"" + escapeAttr(f.nome || "") + "\">" +
+            "<span class=\"fav-dash-avatar\">" + escapeHtml(letra) + "</span>" +
+            "<span class=\"fav-dash-meta\">" +
+            "<span class=\"fav-dash-name\">" + escapeHtml(f.nome) + "</span>" +
+            "</span></div>"
+        );
+    }).join("");
+}
+
+function renderDashboard() {
+    renderDashboardFavWeb();
+    var favApps = Object.keys(favoritosApps).filter(function (k) { return favoritosApps[k]; }).length;
+    var favScripts = Object.keys(favoritosScripts).filter(function (k) { return favoritosScripts[k]; }).length;
+
+    document.getElementById("dashboardStats").innerHTML =
+        "<div class=\"stat-card\"><div class=\"stat-label\">Aplicações</div><div class=\"stat-value\">" + APLICACOES.length + "</div></div>" +
+        "<div class=\"stat-card\"><div class=\"stat-label\">Scripts</div><div class=\"stat-value\">" + scripts.length + "</div></div>" +
+        "<div class=\"stat-card\"><div class=\"stat-label\">Chamados do turno</div><div class=\"stat-value\">" + chamados.length + "</div></div>" +
+        "<div class=\"stat-card\"><div class=\"stat-label\">Favoritos</div><div class=\"stat-value\">" + (favApps + favScripts) + "</div></div>";
+
+    document.getElementById("dashboardExtra").innerHTML =
+        "<p style=\"font-size:13px;line-height:1.7\">" +
+        "Apps favoritos: <strong>" + favApps + "</strong><br>" +
+        "Scripts favoritos: <strong>" + favScripts + "</strong><br>" +
+        "Chamados registrados neste navegador: <strong>" + chamados.length + "</strong>" +
+        "</p>";
+}
+
+
+function salvarFavWeb() {
+    try { localStorage.setItem(storageKey("favWeb"), JSON.stringify(favoritosWeb)); } catch (e) {}
+}
+
+function normalizarUrl(url) {
+    url = (url || "").trim();
+    if (!url) return "";
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    return url;
+}
+
+function limparFormFavWeb() {
+    document.getElementById("favWebEditId").value = "";
+    document.getElementById("favWebNome").value = "";
+    document.getElementById("favWebUrl").value = "";
+    var btn = document.getElementById("btnSalvarFavWeb");
+    if (btn) btn.textContent = "Adicionar";
+    var cancel = document.getElementById("btnCancelarFavWeb");
+    if (cancel) cancel.style.display = "none";
+}
+
+function adicionarFavWeb() {
+    var editId = (document.getElementById("favWebEditId").value || "").trim();
+    var nome = (document.getElementById("favWebNome").value || "").trim();
+    var url = normalizarUrl((document.getElementById("favWebUrl").value || "").trim());
+    if (!nome) {
+        showToast("Informe o nome do favorito.", "error");
+        return;
+    }
+    if (!url) {
+        showToast("Informe a URL.", "error");
+        return;
+    }
+
+    if (editId) {
+        var idNum = Number(editId);
+        var item = favoritosWeb.find(function (f) { return f.id === idNum; });
+        if (item) {
+            item.nome = nome;
+            item.url = url;
+            showToast("Favorito atualizado.", "success");
+        }
+    } else {
+        favoritosWeb.unshift({
+            id: Date.now(),
+            nome: nome,
+            url: url
+        });
+        showToast("Favorito adicionado.", "success");
+    }
+
+    salvarFavWeb();
+    limparFormFavWeb();
+    renderFavWeb();
+    if (typeof renderDashboardFavWeb === "function") renderDashboardFavWeb();
+}
+
+function editarFavWeb(id) {
+    var f = favoritosWeb.find(function (x) { return x.id === id; });
+    if (!f) return;
+    document.getElementById("favWebEditId").value = String(f.id);
+    document.getElementById("favWebNome").value = f.nome || "";
+    document.getElementById("favWebUrl").value = f.url || "";
+    var btn = document.getElementById("btnSalvarFavWeb");
+    if (btn) btn.textContent = "Salvar alteração";
+    var cancel = document.getElementById("btnCancelarFavWeb");
+    if (cancel) cancel.style.display = "";
+    // Vai para o formulário
+    var nomeEl = document.getElementById("favWebNome");
+    if (nomeEl) {
+        nomeEl.focus();
+        nomeEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    // Garante aba favoritos visível
+    if (typeof abrirAba === "function") {
+        var panel = document.getElementById("panel-favoritos");
+        if (!panel || !panel.classList.contains("active")) {
+            abrirAba("favoritos", null);
+        }
+    }
+}
+
+function removerFavWeb(id) {
+    if (!confirm("Remover este favorito?")) return;
+    favoritosWeb = favoritosWeb.filter(function (f) { return f.id !== id; });
+    salvarFavWeb();
+    renderFavWeb();
+    if (typeof renderDashboardFavWeb === "function") renderDashboardFavWeb();
+    showToast("Favorito removido.", "success");
+}
+
+function abrirFavWeb(id) {
+    var f = favoritosWeb.find(function (x) { return x.id === id; });
+    if (!f || !f.url) return;
+    window.open(f.url, "_blank");
+}
+
+function renderFavWeb() {
+    var grid = document.getElementById("gridFavWeb");
+    if (!grid) return;
+    if (!favoritosWeb.length) {
+        grid.innerHTML = "<div class=\"fav-empty\">Nenhum favorito da web ainda. Cadastre um link acima.</div>";
+        return;
+    }
+    grid.className = "fav-web-grid";
+    grid.innerHTML = favoritosWeb.map(function (f) {
+        return (
+            "<div class=\"fav-chip\">" +
+            "<div class=\"fav-chip-icon\">🔗</div>" +
+            "<div class=\"fav-chip-name\">" + escapeHtml(f.nome) + "</div>" +
+            "<div class=\"fav-chip-url\">" + escapeHtml(f.url) + "</div>" +
+            "<div class=\"fav-chip-actions\">" +
+            "<button class=\"btn btn-primary btn-sm\" onclick=\"abrirFavWeb(" + f.id + ")\">Abrir</button>" +
+            "<button class=\"btn btn-secondary btn-sm\" onclick=\"editarFavWeb(" + f.id + ")\">Editar</button>" +
+            "<button class=\"btn btn-danger btn-sm\" onclick=\"removerFavWeb(" + f.id + ")\">Excluir</button>" +
+            "</div></div>"
+        );
+    }).join("");
+}
+
+
+
+
+function renderFavoritos() {
+    renderFavWeb();
+
+    var grid = document.getElementById("gridFavoritos");
+    var apps = APLICACOES.filter(function (a) { return favoritosApps[a.codigo]; });
+    var scrs = scripts.filter(function (s) { return favoritosScripts[s.id]; });
+
+    var html = "";
+    apps.forEach(function (a) {
+        html +=
+            "<div class=\"script-card\">" +
+            "<div class=\"script-title\">🖥️ " + escapeHtml(a.sigla || a.codigo || "") + "</div>" +
+            "<div class=\"script-id\">" + escapeHtml(a.codigo || "") + "</div>" +
+            "<div class=\"script-text\">" + escapeHtml(a.nome || "") +
+            (a.mesa ? "\nMesa: " + escapeHtml(a.mesa) : "") + "</div>" +
+            "<div class=\"script-actions\">" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirConhecimento('" + escapeAttr(a.sigla || "") + "')\">📚 Sigla</button>" +
+            "<button class=\"btn btn-primary btn-sm\" onclick=\"abrirConhecimento('" + escapeAttr(a.nome || "") + "')\">📚 Nome</button>" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirPsQRapida('" + escapeAttr(a.sigla || "") + "')\">PsQ-Rapida Sigla</button>" +
+            "<button class=\"btn btn-success btn-sm\" onclick=\"abrirPsQRapida('" + escapeAttr(a.nome || "") + "')\">PsQ-Rapida Nome</button>" +
+            "</div></div>";
+    });
+    scrs.forEach(function (s) {
+        html +=
+            "<div class=\"script-card\">" +
+            "<div class=\"script-title\">" + escapeHtml(s.emoji || "📜") + " " + escapeHtml(s.titulo || "") + "</div>" +
+            "<div class=\"script-text\">" + escapeHtml((s.texto || "").substring(0, 160)) + "...</div>" +
+            "<div class=\"script-actions\">" +
+            "<button class=\"btn btn-secondary btn-sm\" onclick=\"copiarScript('" + escapeAttr(s.id) + "')\">Copiar</button>" +
+            "</div></div>";
+    });
+
+    if (!html) html = "<div class=\"empty\">Nenhum favorito adicionado.</div>";
+    grid.innerHTML = html;
+}
+
+/* =====================================================
+   UI
+===================================================== */
+function abrirAba(nome, btn) {
+    nome = (nome || "apps").toLowerCase();
+    if (nome === "busca") nome = "apps";
+
+    if (typeof destacarMenu === "function") destacarMenu(nome);
+
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
+
+    var panel = document.getElementById("panel-" + nome);
+    if (panel) panel.classList.add("active");
+
+    // Destaca a aba correspondente mesmo se o botão não foi passado
+    if (!btn) {
+        document.querySelectorAll(".tab").forEach(function (t) {
+            var oc = t.getAttribute("onclick") || "";
+            if (oc.indexOf("'" + nome + "'") !== -1 || oc.indexOf('"' + nome + '"') !== -1) {
+                btn = t;
+            }
+        });
+    }
+    if (btn) btn.classList.add("active");
+
+    try { history.replaceState(null, "", "#" + nome); } catch (e) {}
+
+    if (nome === "scripts") renderizarScripts();
+    if (nome === "chamados") renderizarChamados();
+    if (nome === "dashboard") renderDashboard();
+    if (nome === "favoritos") renderFavoritos();
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+}
+
+function logout() {
+    window.location.href = "/logout";
+}
+
+function showToast(message, type) {
+    var toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.className = "toast show " + (type || "");
+    setTimeout(function () { toast.classList.remove("show"); }, 3000);
+}
+
+document.getElementById("scriptModal").addEventListener("click", function (e) {
+    if (e.target === this) fecharModal();
+});
+
+document.addEventListener("click", function (e) {
+    if (!e.target.closest(".form-chamado-tipo")) {
+        document.getElementById("tipoSugestoes").classList.remove("show");
+    }
+});
+
+function escapeHtml(value) {
+    return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function escapeAttr(value) {
+    return String(value == null ? "" : value)
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+}
+</script>
+</body>
+</html>
