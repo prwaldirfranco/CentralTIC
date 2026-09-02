@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central TIC — Login</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;background:linear-gradient(135deg,#0b2742,#155b88)}
+.container{width:92%;max-width:430px;background:#fff;border-radius:18px;padding:35px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.logo{text-align:center;font-size:48px}
+h1{margin:10px 0 5px;text-align:center;color:#12395b}
+.subtitulo{text-align:center;color:#667085;margin-bottom:25px}
+label{display:block;margin:15px 0 7px;font-weight:bold}
+input{width:100%;padding:13px;border:1px solid #d0d5dd;border-radius:9px;font-size:15px}
+button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#12395b;color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+button:hover{background:#0d2b45}
+.mensagem{min-height:22px;margin-top:15px;text-align:center}
+.info{margin-top:25px;padding:14px;border-radius:9px;background:#f2f4f7;color:#475467;font-size:13px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="logo">🛠️</div>
+<h1>Central TIC</h1>
+<div class="subtitulo">Central de Atendimento TIC</div>
+<form id="loginForm">
+<label>Usuário</label>
+<input id="usuario" type="text" autocomplete="username" required>
+<label>Senha</label>
+<input id="senha" type="password" autocomplete="current-password" required>
+<button type="submit">Entrar</button>
+</form>
+<div id="mensagem" class="mensagem"></div>
+<div class="info">
+<strong>Acesso restrito</strong><br><br>
+Use o usuário e a senha fornecidos pela administração.<br>
+Em caso de esquecimento, solicite redefinição ao administrador.
+</div>
+</div>
+<script>
+const form = document.getElementById("loginForm");
+const mensagem = document.getElementById("mensagem");
+form.addEventListener("submit", async function(event) {
+  event.preventDefault();
+  mensagem.textContent = "Autenticando...";
+  try {
+    const resposta = await fetch("/login", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        usuario: document.getElementById("usuario").value.trim(),
+        senha: document.getElementById("senha").value
+      })
+    });
+    const data = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) {
+      mensagem.textContent = data.erro || data.mensagem || "Falha no login.";
+      return;
+    }
+    mensagem.textContent = "Sucesso. Redirecionando...";
+    window.location.href = "/";
+  } catch (e) {
+    mensagem.textContent = "Erro de conexão.";
+  }
+});
+</script>
+</body>
+</html>
